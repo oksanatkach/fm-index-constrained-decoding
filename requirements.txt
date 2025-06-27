@@ -1,5 +1,6 @@
 ftfy
 logits-processor-zoo
+mwparserfromhell
 spacy
 torch
 transformers
