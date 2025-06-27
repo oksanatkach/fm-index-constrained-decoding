@@ -10,8 +10,8 @@ import struct
 import tempfile
 from typing import List, Set, Tuple, Optional, Iterable, Iterator
 
-from cpp_modules_mac.fm_index import FMIndex as _FMIndex
-from cpp_modules_mac.fm_index import load_FMIndex
+from cpp_modules.fm_index import FMIndex as _FMIndex
+from cpp_modules.fm_index import load_FMIndex
 
 SHIFT = 10
 BUFSZ = 1_000_000
