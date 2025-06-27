@@ -6,3 +6,4 @@ __pycache__/
 cpp_modules_mac/_fm_index.so
 cpp_modules_mac/fm_index.py
 cpp_modules_mac/fm_index_wrap.cxx
+cpp_modules/
