@@ -78,3 +78,29 @@ python build_fm_index.py \
     --jobs 40 --include_title
 ```
 The parameter `--jobs` only speeds up the tokenization at the moment. `--include_title` only makes sense if your retrieval corpus has non-empty titles.
+
+
+### Converting Wikipedia dump into an index
+
+Download the wiki dump.
+```commandline
+# WARNING: this file is 24 GB
+https://dumps.wikimedia.org/simplewiki/latest/simplewiki-latest-pages-articles.xml.bz2
+# smaller file for testing
+https://dumps.wikimedia.org/enwiki/latest/enwiki-latest-pages-articles.xml.bz2
+```
+
+Convert bz2 to tsv.
+```commandline
+python process_wikipedia_dump.py data/simplewiki-latest-pages-articles.xml.bz2 data/simplewiki.tsv
+```
+
+Build the FM index.
+```commandline
+FILE_I=data/simplewiki.tsv
+FILE_O=data/simplewiki.fm_index
+CLSFR=meta-llama/Llama-3.2-1B-Instruct
+
+python build_fm_index.py $FILE_I $FILE_O --hf_model $CLSFR --jobs 40 --include_title
+
+```
