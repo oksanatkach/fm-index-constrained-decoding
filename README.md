@@ -85,16 +85,16 @@ The parameter `--jobs` only speeds up the tokenization at the moment. `--include
 Download the wiki dump.
 ```commandline
 # WARNING: this file is 24 GB
-https://dumps.wikimedia.org/simplewiki/latest/simplewiki-latest-pages-articles.xml.bz2
+wget https://dumps.wikimedia.org/simplewiki/latest/simplewiki-latest-pages-articles.xml.bz2
 # smaller file for testing
-https://dumps.wikimedia.org/enwiki/latest/enwiki-latest-pages-articles.xml.bz2
+wget https://dumps.wikimedia.org/enwiki/latest/enwiki-latest-pages-articles.xml.bz2
 ```
 
 Convert bz2 to tsv.
 ```commandline
 python process_wikipedia_dump.py data/simplewiki-latest-pages-articles.xml.bz2 data/simplewiki.tsv
 ```
-
+ 
 Build the FM index.
 ```commandline
 FILE_I=data/simplewiki.tsv

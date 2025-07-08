@@ -108,7 +108,9 @@ class FMIndex(_FMIndex):
         end_row = self.size()
         for token in sequence:
             start_row, end_row = self.backward_search_step(token + SHIFT, start_row, end_row)
-        end_row += 1
+            if start_row == end_row == 0:
+                return start_row, end_row
+
         return start_row, end_row
 
     def get_count(self, sequence: List[int]) -> int:

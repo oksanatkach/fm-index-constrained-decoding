@@ -1,18 +1,20 @@
-from document_constrained_generation_causal import IndexBasedLogitsProcessor
+# from document_constrained_generation_causal import IndexBasedLogitsProcessor
+from document_constrained_generation_causal_qwen import IndexBasedLogitsProcessor
 from transformers import AutoModelForCausalLM, AutoTokenizer, LogitsProcessorList
 from logits_processor_zoo.transformers import CiteFromPromptLogitsProcessor
 from index import FMIndex
 
 # switch to causal LLMs
 # model_name = "meta-llama/Llama-3.1-8B-Instruct"
-model_name = "meta-llama/Llama-3.2-1B-Instruct"
+# model_name = "meta-llama/Llama-3.2-1B-Instruct"
 # model_name = "meta-llama/Llama-3.1-8B"
-# model_name = "Qwen/Qwen3-0.6B"
+model_name = "Qwen/Qwen3-0.6B"
+# model_name = "Qwen/Qwen3-8B"
 tokenizer = AutoTokenizer.from_pretrained(model_name)
 model = AutoModelForCausalLM.from_pretrained(model_name)
 
 sentence = 'The unicorns greeted the scientists, explaining that they had been expecting the encounter for a while.'
-prompt = f"Paraphrase this sentence: {sentence} Only reply with the resulting sentence."# /nothink"
+prompt = f"Paraphrase this sentence: {sentence} Only reply with the resulting sentence. /no_think"
 messages = [
     {"role": "user", "content": prompt}
 ]
@@ -43,19 +45,23 @@ index = FMIndex()
 index.initialize([corpus], in_memory=True)
 
 # out_ids = model.generate(**input_ids, max_new_tokens=200, min_new_tokens=1, do_sample=False, num_beams=3,
-out_ids = model.generate(**input_ids, max_new_tokens=50, min_new_tokens=1, do_sample=False, num_beams=1,
+out_ids = model.generate(**input_ids, max_new_tokens=50, min_new_tokens=10, do_sample=False, num_beams=2,
                               logits_processor=LogitsProcessorList([IndexBasedLogitsProcessor(
-                                    num_beams=1,
+                                    num_beams=2,
+                                    min_new_tokens=10,
                                     index=index,
+                                    model_name=model_name,
                                     pad_token_id=model.config.pad_token_id,
                                     eos_token_id=tokenizer.eos_token_id,
                                     force_decoding_from=None,
                                     stop_at_count=0,
                                     always_allow_eos=True,
                                     forced_bos_token_id=None,
+                                    length_reward_factor=1
                                 )]),
                               temperature=None, top_p=None, top_k=None)
 
 gen_output = tokenizer.batch_decode(out_ids, skip_special_tokens=True,
                                          clean_up_tokenization_spaces=False)
+# print(out_ids)
 print(gen_output)

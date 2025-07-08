@@ -69,9 +69,30 @@ const vector<size_type> FMIndex::backward_search_step(char_type symbol, size_typ
     vector<size_type> output;
     size_type new_low = 0;
     size_type new_high = 0;
+
+    // Add bounds checking
+    if (high >= index.size()) {
+        high = index.size() - 1;
+    }
+    if (low > high) {
+        // Invalid range
+        output.push_back(0);
+        output.push_back(0);
+        return output;
+    }
+
     backward_search(index, low, high, (char_type) symbol, new_low, new_high);
+
+    // Check if the search failed
+    if (new_low > new_high) {
+        // No matches found, return empty range
+        output.push_back(0);
+        output.push_back(0);
+        return output;
+    }
+
     output.push_back(new_low);
-    output.push_back(new_high);
+    output.push_back(new_high + 1);
     return output;
 }
 
