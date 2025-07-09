@@ -56,7 +56,7 @@ const vector<size_type> FMIndex::backward_search_multi(const vector<char_type> q
 {
     vector<size_type> output;
     size_type l = 0;
-    size_type r = index.size();
+    size_type r = index.size() - 1;
     for (size_type i = 0; i < query.size(); i++)
         backward_search(index, l, r, (char_type) query[i], l, r);
     output.push_back(l);
@@ -100,6 +100,13 @@ const vector<char_type> FMIndex::distinct(size_type low, size_type high)
 {
     vector<char_type> ret;
     if (low == high) return ret;
+	
+	// Add bounds checking
+    if (high > index.size()) {
+        high = index.size();
+    }
+    if (low >= high) return ret;
+
     size_type quantity;                          // quantity of characters in interval
     interval_symbols(index.wavelet_tree, low, high, quantity, chars, rank_c_i, rank_c_j);
     for (size_type i = 0; i < quantity; i++)
@@ -118,6 +125,13 @@ const vector<char_type> FMIndex::distinct_count(size_type low, size_type high)
 
     vector<char_type> ret;
     if (low == high) return ret;
+
+    // Add bounds checking
+    if (high > index.size()) {
+        high = index.size();
+    }
+    if (low >= high) return ret;
+
     size_type quantity;                          // quantity of characters in interval
     interval_symbols(index.wavelet_tree, low, high, quantity, chars_, rank_c_i_, rank_c_j_);
     for (size_type i = 0; i < quantity; i++)
@@ -151,36 +165,6 @@ const vector<vector<char_type>> FMIndex::distinct_count_multi(vector<size_type> 
 
 }
 
-// const vector<char_type> FMIndex::distinct_count_multi(vector<size_type> lows, vector<size_type> highs)
-// {
-//     vector<char_type> ret;
-//     vector<char_type> tmp;
-
-//     vector<std::future<const vector<char_type>>> threads;
-
-
-//     for (size_type i = 0; i < lows.size(); i++) {
-//         threads.push_back(
-//             std::async(&FMIndex::distinct_count, this, lows[i], highs[i])
-//         );
-//     }
-    
-//     for (size_type i = 0; i < lows.size(); i++) {
-     
-//         tmp = threads[i].get();
-//         ret.push_back(tmp.size());
-     
-//         for (size_type j = 0; j < tmp.size(); j++) {
-//             ret.push_back(tmp[j]);
-//         }
-            
-//     )
-
-//     return ret;
-
-// }
-
-
 size_type FMIndex::locate(size_type row)
 {
     if (row >= index.size()) return -1;
@@ -190,17 +174,22 @@ size_type FMIndex::locate(size_type row)
 const vector<char_type> FMIndex::extract_text(size_type begin, size_type end)
 {
     vector<char_type> ret;
-    if (end - begin == 0) return ret;
-    size_type start = index.isa[end];
+    if (end <= begin) return ret;
+    if (end > index.size()) end = index.size();
+
+    size_type start = index.isa[end-1];  // Fixed: use end-1 since end is exclusive
     char_type symbol = index.bwt[start];
     ret.push_back(symbol);
     if (end - begin == 1) return ret;
     for (size_type i = 0; i < end-begin-1; i++) 
     {
-        start = backward_search_step(symbol, start, start+1)[0];
+        vector<size_type> search_result = backward_search_step(symbol, start, start+1);
+        start = search_result[0];
+        if (start >= index.size()) break;  // Safety check
         symbol = index.bwt[start];
         ret.push_back(symbol);
     }
+
     return ret; 
 }
 
@@ -218,39 +207,3 @@ FMIndex load_FMIndex(const string path)
     fm.rank_c_j = vector<size_type>(fm.index.wavelet_tree.sigma);
     return fm;
 }
-
-
-// int main(int argc, char** argv) {
-//     vector<int> data = {1, 8, 15, 23, 1, 8, 23, 11, 8};
-//     FMIndex index;
-//     index.initialize(data);
-//     size_type low = 0;
-//     size_type high = data.size();
-//     cout << low << " " << high << endl;
-    
-//     vector<int> lows;
-//     vector<int> highs;
-//     vector<int> ret;
-//     vector<vector<int>> mtret;
-
-//     lows.push_back(0)
-//     highs.push_back(1)
-//     ret = index.distinct_count(0, 1).size();
-//     for (size_type i = 0; i++; ret.size()) {
-//         cout << ret.get(i) << endl;    
-//     }
-
-//     lows.push_back(0)
-//     highs.push_back(5)
-//     ret = index.distinct_count(0, 5).size();
-//     for (size_type i = 0; i++; ret.size()) {
-//         cout << ret.get(i) << endl;    
-//     }
-
-//     lows.push_back(2)
-//     highs.push_back(6)
-//     ret = index.distinct_count(2, 6).size();
-//     for (size_type i = 0; i++; ret.size()) {
-//         cout << ret.get(i) << endl;    
-//     }
-// }

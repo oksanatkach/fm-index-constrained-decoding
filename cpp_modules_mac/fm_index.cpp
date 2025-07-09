@@ -78,8 +78,17 @@ const vector<size_type> FMIndex::backward_search_step(char_type symbol, size_typ
     }
 
     backward_search(index, low, high, (char_type) symbol, new_low, new_high);
+
+    // Check if the search failed
+    if (new_low > new_high) {
+        // No matches found, return empty range
+        output.push_back(0);
+        output.push_back(0);
+        return output;
+    }
+
     output.push_back(new_low);
-    output.push_back(new_high);
+    output.push_back(new_high + 1);
     return output;
 }
 
@@ -122,6 +131,7 @@ const vector<char_type> FMIndex::distinct_count(size_type low, size_type high)
     interval_symbols(index.wavelet_tree, low, high, quantity, chars_, rank_c_i_, rank_c_j_);
     for (size_type i = 0; i < quantity; i++)
     {
+	
         ret.push_back(chars_[i]);
         ret.push_back((char_type) rank_c_j_[i] - rank_c_i_[i]);
     }
@@ -132,6 +142,7 @@ const vector<vector<char_type>> FMIndex::distinct_count_multi(vector<size_type> 
 {
     vector<vector<char_type>> ret;
     vector<std::future<const vector<char_type>>> threads;
+
 
     for (size_type i = 0; i < lows.size(); i++) {
         threads.push_back(
