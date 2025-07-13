@@ -1,14 +1,14 @@
 import torch
 from logits_processor_zoo.transformers.base import BaseLogitsProcessor
 from typing import Optional, List
-from index import FMIndex
+import requests
 
 
 class IndexBasedLogitsProcessor(BaseLogitsProcessor):
     def __init__(
             self,
-            index: FMIndex,
             num_beams: int,
+            index_url: str = 'http://0.0.0.0:8000',
             min_new_tokens: int = 5,
             pad_token_id: int = 0,
             eos_token_id: int = 2,
@@ -19,7 +19,7 @@ class IndexBasedLogitsProcessor(BaseLogitsProcessor):
             length_reward_factor: float = 2.0,
     ):
         super().__init__()
-        self.index = index
+        self.index_url = index_url
         self.pad_token_id = pad_token_id
         self.eos_token_id = eos_token_id
         self._num_beams = num_beams
@@ -31,15 +31,14 @@ class IndexBasedLogitsProcessor(BaseLogitsProcessor):
         self.always_allow_eos = always_allow_eos
         self.forced_bos_token_id = forced_bos_token_id
         self.min_new_tokens = min_new_tokens
-
-        self.all_unigrams = torch.tensor(requests.get())
+        self.all_unigrams = torch.tensor(requests.get(f'{self.index_url}/occurring_distinct').json())
 
         self.length_reward_factor = length_reward_factor
         # self.BOOST = 0.0
         # self.BOOST = 20.0
         self.BOOST = 10.0
 
-        self.end_marker = [151645, 198, 151644,  77091, 198]
+        self.end_marker = [151645, 198, 151644, 77091, 198]
 
     @staticmethod
     def remove_end_marker(input_ids, end_marker):
@@ -82,6 +81,18 @@ class IndexBasedLogitsProcessor(BaseLogitsProcessor):
                    for i in range(len(sent) - 1))
 
 
+    def get_sub_sequence_count(self, sub_sequence: List[int]) -> int:
+        response = requests.post(f'{self.index_url}/get_count', json={'sub_sequence': sub_sequence})
+        return response.json()['count']
+
+    def get_range(self, sequence: List[int]) -> int:
+        response = requests.post(f'{self.index_url}/get_range', json={'sequence': sequence})
+        return response.json()['range']
+
+    def get_distinct_count_multi(self, lows, highs):
+        response = requests.post(f'{self.index_url}/get_distinct_count_multi', json={'lows': lows, 'highs': highs})
+        return response.json()['distinct_list']
+
     def get_trailing_corpus_ngram(self, sent: List[int]) -> List[int]:
         '''
         Find the longest ngram at the end of the generated sequence which matches the corpus
@@ -94,7 +105,7 @@ class IndexBasedLogitsProcessor(BaseLogitsProcessor):
 
         for ind in range(len(sent)-1, -1, -1):
             sub_sent = sent[ind:]
-            if self.index.get_count(sub_sent) == 0:
+            if self.get_sub_sequence_count(sub_sent) == 0:
                 return sent[ind+1:]
             return sent
 
@@ -128,14 +139,14 @@ class IndexBasedLogitsProcessor(BaseLogitsProcessor):
                                 count = 0
 
                             elif self.force_decoding_from is not None:
-                                low, high = self.index.get_range(self.force_decoding_from + sent)
-                                count = self.index.get_count(self.force_decoding_from + sent)
+                                low, high = self.get_range(self.force_decoding_from + sent)
+                                count = self.get_sub_sequence_count(self.force_decoding_from + sent)
 
                             else:
-                                low, high = self.index.get_range(sent)
+                                low, high = self.get_range(sent)
 
                                 # how many continuations
-                                count = self.index.get_count(sent)
+                                count = self.get_sub_sequence_count(sent)
 
                             lows.append(low)
                             highs.append(high)
@@ -143,7 +154,7 @@ class IndexBasedLogitsProcessor(BaseLogitsProcessor):
 
             # get all possible unique tokens that can continue this ngram and their count
             # for instance, if the same token continues the ngram in 6 different spots in the corpus, the count is 6
-            fm_index_result = self.index.get_distinct_count_multi(lows, highs)
+            fm_index_result = self.get_distinct_count_multi(lows, highs)
             # reverse
             fm_index_result = fm_index_result[::-1]
             fm_index_counts = fm_index_counts[::-1]

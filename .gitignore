@@ -3,7 +3,7 @@ sdsl-lite
 .idea/
 MT_testing.py
 __pycache__/
-cpp_modules_mac/_fm_index.so
-cpp_modules_mac/fm_index.py
-cpp_modules_mac/fm_index_wrap.cxx
+cpp_modules/_fm_index.so
+cpp_modules/fm_index.py
+cpp_modules/fm_index_wrap.cxx
 cpp_modules/

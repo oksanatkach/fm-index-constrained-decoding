@@ -26,6 +26,8 @@ env CFLAGS='-fPIC' CXXFLAGS='-fPIC' sdsl-lite/install.sh
 
 swig -c++ -python -I/usr/include -outdir cpp_modules -o cpp_modules/fm_index_wrap.cxx cpp_modules/fm_index.i
 
+# note: these root paths work if you spun a linux machine using Docker
+# for an HPC system like Cirrus
 g++ -std=c++17 -fPIC -shared cpp_modules/fm_index.cpp cpp_modules/fm_index_wrap.cxx /root/lib/libsdsl.a -ldivsufsort -ldivsufsort64 -I/root/include -I/usr/include/python3.11 -o cpp_modules/_fm_index.so
 
 pip install -r requirements.txt
@@ -85,9 +87,9 @@ The parameter `--jobs` only speeds up the tokenization at the moment. `--include
 Download the wiki dump.
 ```commandline
 # WARNING: this file is 24 GB
-wget https://dumps.wikimedia.org/simplewiki/latest/simplewiki-latest-pages-articles.xml.bz2
-# smaller file for testing
 wget https://dumps.wikimedia.org/enwiki/latest/enwiki-latest-pages-articles.xml.bz2
+# smaller file for testing
+wget https://dumps.wikimedia.org/simplewiki/latest/simplewiki-latest-pages-articles.xml.bz2
 ```
 
 Convert bz2 to tsv.
@@ -99,8 +101,8 @@ Build the FM index.
 ```commandline
 FILE_I=data/simplewiki.tsv
 FILE_O=data/simplewiki.fm_index
-CLSFR=meta-llama/Llama-3.2-1B-Instruct
+TKNSR=meta-llama/Llama-3.2-1B-Instruct
 
-python build_fm_index.py $FILE_I $FILE_O --hf_model $CLSFR --jobs 40 --include_title
+python build_fm_index.py $FILE_I $FILE_O --hf_model $TKNSR --jobs 40 --include_title
 
 ```
