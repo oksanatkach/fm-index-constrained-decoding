@@ -1,26 +1,24 @@
+from typing import List, Tuple, Optional
 import torch
-from logits_processor_zoo.transformers.base import BaseLogitsProcessor
-from typing import Optional, List
 import requests
 
 
-class IndexBasedLogitsProcessor(BaseLogitsProcessor):
+class IndexBasedLogitsProcessor:
     def __init__(
             self,
-            num_beams: int = 1,
+            num_beams: int,
             index_url: str = 'http://0.0.0.0:8000',
-            min_new_tokens: int = 5,
             pad_token_id: int = 0,
             eos_token_id: int = 2,
             force_decoding_from: Optional[List[int]] = None,
             stop_at_count: int = 0,
             always_allow_eos: bool = False,
             forced_bos_token_id: Optional[int] = None,
+            end_marker: List[int] = None,
             length_reward_factor: float = 2.0,
-            end_marker: List[int] = [151645, 198, 151644, 77091, 198]
+            min_new_tokens: int = 5,
     ):
         super().__init__()
-        self.index_url = index_url
         self.pad_token_id = pad_token_id
         self.eos_token_id = eos_token_id
         self._num_beams = num_beams
@@ -31,58 +29,27 @@ class IndexBasedLogitsProcessor(BaseLogitsProcessor):
         self.stop_at_count = stop_at_count
         self.always_allow_eos = always_allow_eos
         self.forced_bos_token_id = forced_bos_token_id
-        self.min_new_tokens = min_new_tokens
-        self.all_unigrams = torch.tensor(requests.get(f'{self.index_url}/occurring_distinct').json())
-
-        self.length_reward_factor = length_reward_factor
-        # self.BOOST = 0.0
+        self.BOOST = 0.0
         # self.BOOST = 20.0
-        self.BOOST = 10.0
+        # self.BOOST = 10.0
 
         self.end_marker = end_marker
+        self.index_url = index_url
+        self.all_unigrams = torch.tensor(requests.get(f'{self.index_url}/occurring_distinct').json())
+        self.length_reward_factor = length_reward_factor
+        self.min_new_tokens = min_new_tokens
 
-    @staticmethod
-    def remove_end_marker(input_ids, end_marker):
-        end_marker_tensor = torch.tensor(end_marker, device=input_ids.device)
-        marker_len = len(end_marker)
-        result = []
-
-        for row in input_ids:
-            for i in range(len(row) - marker_len + 1):
-                if torch.equal(row[i:i + marker_len], end_marker_tensor):
-                    # Found the marker, return everything after it
-                    result.append(row[i + marker_len:])
-        if not result:
-            return torch.empty(0,0)
-
-        return torch.stack(result)
-
-    @staticmethod
-    def remove_system_tokens(sent):
-        system_tokens = [151667, 271, 151668, 271]
-
-        if len(sent) < len(system_tokens):
-            # Check if sent is a prefix of system_tokens
-            if sent == system_tokens[:len(sent)]:
-                return []  # Unfinished system_tokens, return empty
-            else:
-                return sent
-
-        if sent[:len(system_tokens)] == system_tokens:
-            return sent[len(system_tokens):]  # Remove complete system_tokens
-        else:
-            return sent
-
-    @staticmethod
-    def finished_thinking(sent):
-        finished_thinking_marker = (151668, 271)
-
-        if len(sent) < 2:
-            return False
-
-        return any((sent[i], sent[i + 1]) == finished_thinking_marker
-                   for i in range(len(sent) - 1))
-
+    def clone(self):
+        return IndexBasedLogitsProcessor(
+            num_beams=self._num_beams,
+            index_url=self.index_url,
+            pad_token_id=self.pad_token_id,
+            eos_token_id=self.eos_token_id,
+            force_decoding_from=self.force_decoding_from,
+            stop_at_count=self.stop_at_count,
+            always_allow_eos=self.always_allow_eos,
+            forced_bos_token_id=self.forced_bos_token_id
+        )
 
     def get_sub_sequence_count(self, sub_sequence: List[int]) -> int:
         response = requests.post(f'{self.index_url}/get_count', json={'sub_sequence': sub_sequence})
@@ -102,9 +69,9 @@ class IndexBasedLogitsProcessor(BaseLogitsProcessor):
         :param sent:
         :return:
         '''
-        sent = self.remove_system_tokens(sent)
-        if sent == []:
-            return []
+        # sent = self.remove_system_tokens(sent)
+        # if sent == []:
+        #     return []
 
         for ind in range(len(sent)-1, -1, -1):
             sub_sent = sent[ind:]
@@ -112,20 +79,23 @@ class IndexBasedLogitsProcessor(BaseLogitsProcessor):
                 return sent[ind+1:]
             return sent
 
-    def _process(self, input_ids: torch.LongTensor, scores: torch.FloatTensor) -> torch.Tensor:
-        input_ids = self.remove_end_marker(input_ids, end_marker=self.end_marker)
+    def __call__(self, input_ids: Tuple, scores: torch.FloatTensor) -> torch.Tensor:
+        input_ids = torch.tensor([list(input_ids)])
+        scores = scores.unsqueeze(0)
+
         mask = torch.full_like(scores, 0.0)
 
         if input_ids.size(1) == 0:
             mask[:, self.all_unigrams] = self.BOOST
 
-        if input_ids.size(1) > 0:
+        else:
             input_ids_list = input_ids.view(-1, self._num_beams, input_ids.shape[-1]).tolist()
             processed_input_ids_list = []
             for batch_id, beam_sent in enumerate(input_ids_list):
                 batch_lst = []
                 for beam_id, sent in enumerate(beam_sent):
-                    batch_lst.append(self.get_trailing_corpus_ngram(sent) if self.finished_thinking(sent) else None)
+                    # batch_lst.append(self.get_trailing_corpus_ngram(sent) if self.finished_thinking(sent) else None)
+                    batch_lst.append(self.get_trailing_corpus_ngram(sent))
                 processed_input_ids_list.append(batch_lst)
 
             lows = []
@@ -158,10 +128,7 @@ class IndexBasedLogitsProcessor(BaseLogitsProcessor):
                             highs.append(high)
                             fm_index_counts.append(count)
 
-            # get all possible unique tokens that can continue this ngram and their count
-            # for instance, if the same token continues the ngram in 6 different spots in the corpus, the count is 6
             fm_index_result = self.get_distinct_count_multi(lows, highs)
-            # reverse
             fm_index_result = fm_index_result[::-1]
             fm_index_counts = fm_index_counts[::-1]
 

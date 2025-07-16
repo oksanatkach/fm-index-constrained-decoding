@@ -32,7 +32,7 @@ class IndexBasedLogitsProcessor(BaseLogitsProcessor):
         self.forced_bos_token_id = forced_bos_token_id
         self.min_new_tokens = min_new_tokens
 
-        self.all_unigrams = torch.tensor(requests.get())
+        self.all_unigrams = torch.tensor(self.index.occurring_distinct)
 
         self.length_reward_factor = length_reward_factor
         # self.BOOST = 0.0

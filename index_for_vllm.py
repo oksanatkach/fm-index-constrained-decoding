@@ -1,38 +1,40 @@
-from document_constrained_generation_vllm import IndexBasedLogitsProcessor
+# from document_constrained_generation_vllm import IndexBasedLogitsProcessor
+from document_constrained_generation_vllm_api_eval import IndexBasedLogitsProcessor
 import vllm
-from index import FMIndex
+# from index import FMIndex
 
-model_name = "meta-llama/Llama-3.2-1B-Instruct"
+# model_name = "meta-llama/Llama-3.2-1B-Instruct"
+model_name = "Qwen/Qwen3-0.6B"
 
-model = vllm.LLM(model=model_name, task="generate")
+model = vllm.LLM(model=model_name, task="generate", max_model_len=32768)
 
-corpus = " ".join("""
-They also were found to have perfectly coiffed hair, and wore what appeared to be Dior makeup.
-“We were shocked to discover the unicorns,” said anthropologist Daniel St. Maurice. “They were
-like nothing we had ever seen before. We had heard legends of the unicorns, but never thought
-they actually existed.” When the scientists first arrived in the valley, the unicorns were
-surprised and startled by the presence of humans, but were also excited. The unicorns welcomed
-the researchers and explained that they had been waiting for them for a very long time. “The
-unicorns said that they had been waiting for us for a very long time,” said Dr. St. Maurice.
-“They said they had always known that humans would eventually discover them, but that they had
-also always known that humans would be too stupid to realize the unicorns had been waiting for
-them.”
-""".split()).strip()
+# corpus = " ".join("""
+# They also were found to have perfectly coiffed hair, and wore what appeared to be Dior makeup.
+# “We were shocked to discover the unicorns,” said anthropologist Daniel St. Maurice. “They were
+# like nothing we had ever seen before. We had heard legends of the unicorns, but never thought
+# they actually existed.” When the scientists first arrived in the valley, the unicorns were
+# surprised and startled by the presence of humans, but were also excited. The unicorns welcomed
+# the researchers and explained that they had been waiting for them for a very long time. “The
+# unicorns said that they had been waiting for us for a very long time,” said Dr. St. Maurice.
+# “They said they had always known that humans would eventually discover them, but that they had
+# also always known that humans would be too stupid to realize the unicorns had been waiting for
+# them.”
+# """.split()).strip()
+#
+# corpus = model.get_tokenizer()(' ' + corpus, add_special_tokens=False)['input_ids'] + [model.get_tokenizer().eos_token_id]
+# index = FMIndex()
+# index.initialize([corpus], in_memory=True)
 
-corpus = model.get_tokenizer()(' ' + corpus, add_special_tokens=False)['input_ids'] + [model.get_tokenizer().eos_token_id]
-index = FMIndex()
-index.initialize([corpus], in_memory=True)
+# prompt = "Paraphrase this sentence: The unicorns greeted the scientists, explaining that they had been expecting the encounter for a while."
 
-prompt = "Paraphrase this sentence: The unicorns greeted the scientists, explaining that they had been expecting the encounter for a while."
-
-output = model.generate(prompts=prompt,
+output = model.generate(prompt_token_ids=[[16141, 1493, 4755, 1447, 48, 25, 979, 572, 279, 1537, 882, 5489, 572, 389, 279, 17788, 5267, 32, 25]],
                         sampling_params=vllm.SamplingParams(
                             logits_processors = [
                             # CiteFromPromptLogitsProcessor(model.get_tokenizer(), boost_factor=2.0),
                             IndexBasedLogitsProcessor(
                                     # num_beams=3,
                                     num_beams=1,
-                                    index=index,
+                                    # index=index,
                                     pad_token_id=model.get_tokenizer().pad_token_id,
                                     eos_token_id=model.get_tokenizer().eos_token_id,
                                     force_decoding_from=None,
