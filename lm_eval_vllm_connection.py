@@ -5,10 +5,7 @@ from lm_eval.models.utils import undistribute
 
 from typing import Optional, List
 from more_itertools import distribute
-import torch
-# from document_constrained_generation_causal_qwen import IndexBasedLogitsProcessor
 from document_constrained_generation_vllm_api_eval import IndexBasedLogitsProcessor
-from transformers import LogitsProcessorList
 from vllm import LLM, SamplingParams
 from vllm.lora.request import LoRARequest
 from vllm.utils import get_open_port
@@ -172,7 +169,6 @@ results = lm_eval.simple_evaluate(
     model=lm_obj,
     tasks=["nq_open"],
     log_samples=True,
-    output_path=f"./results/{model_name}.json",
     num_fewshot=0,
     # limit=10
 )
