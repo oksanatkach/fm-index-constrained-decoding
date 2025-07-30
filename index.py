@@ -61,10 +61,12 @@ class FMIndex(_FMIndex):
                     occurring |= set(seq)
                     seq = [x + SHIFT for x in seq[::-1]]
                     tmp.write(b''.join([struct.pack(FORMAT, x) for x in seq]))
+
                 tmp.flush()
                 self.occurring = list(occurring)
                 super().initialize_from_file(tmp.name, 4)
         self.occurring_distinct, self.occurring_counts = self.get_distinct_count(0, len(self))
+        print(len(self.occurring_distinct))
 
     def get_doc(self, doc_index: int) -> List[int]:
         """
@@ -107,7 +109,8 @@ class FMIndex(_FMIndex):
         start_row = 0
         end_row = self.size()
         for token in sequence:
-            start_row, end_row = self.backward_search_step(token + SHIFT, start_row, end_row)
+            # start_row, end_row = self.backward_search_step(token + SHIFT, start_row, end_row)
+            start_row, end_row = self.backward_search_step(token + SHIFT, start_row, end_row - 1)
             if start_row == end_row == 0:
                 return start_row, end_row
 
@@ -157,6 +160,7 @@ class FMIndex(_FMIndex):
                 distinct.append(d - SHIFT)
                 counts.append(c)
         return distinct, counts
+
 
     def get_distinct_count_multi(self, lows: List[int], highs: List[int]) -> List[Tuple[List[int], List[int]]]:
         """
