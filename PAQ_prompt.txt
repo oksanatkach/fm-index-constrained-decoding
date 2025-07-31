@@ -1,0 +1,11 @@
+Paraphrase the question (the paraphrase should be in lowercase) and immediately answer it like below.
+
+Question: Which president was in office at the time the original Peanuts cartoon debuted? Paraphrase: who was president when the first peanuts cartoon was published? Answer: Presidency of Harry S. Truman
+
+Question: Who was the American author with the last name Sinclair awarded the Nobel Prize in Literature in 1930? Paraphrase: which american-born sinclair won the nobel prize for literature in 1930? Answer: (Harry) Sinclair Lewis
+
+Question: During which decade did Billboard start listing American popular music charts? Paraphrase: in which decade did billboard magazine first publish and american hit chart? Answer: 30's
+
+Question: Which team won Super Bowl 20? Paraphrase: who won super bowl xx? Answer: Chicago Bears
+
+Question:
