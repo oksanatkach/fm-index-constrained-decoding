@@ -18,7 +18,7 @@ def run_stage_1(FILE_I, URL):
                     "prompt": prompt,
                     "temperature": 0.0, "min_tokens": 10, "n": 1, "top_n": 1.0}
             response = requests.post(f"{URL}/chat_get_output", json=data)
-            response_jsn = json.loads(response.text)
+            response_jsn = json.loads(response.text)['output']
             # TODO: match this to output structure
             tokens_hash = hash(tuple(response_jsn['prompt_token_ids']))
             with open(f"{log_path}{tokens_hash}.output_token_ids", 'w') as out_file:
