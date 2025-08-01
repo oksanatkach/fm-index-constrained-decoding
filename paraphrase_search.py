@@ -37,7 +37,7 @@ def get_paraphrase_scores(output_token_ids: List[int], output_token_logprobs: Li
     paraphrases_output_tokens = []
     score = 0
     paraphrase = []
-    for idx, token in enumerate(output_token_ids[-1:]):
+    for idx, token in enumerate(output_token_ids[:-1]):
         if token not in separator_tokens:
             assert token == output_token_logprobs[idx][0]
             score += output_token_logprobs[idx][1]
