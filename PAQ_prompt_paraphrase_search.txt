@@ -1,6 +1,7 @@
 Paraphrase this sentence in lower case in exactly 5 different ways, starting with different words, separate the different versions with newlines, like so:
 Question: What is the number of counties in Albania?
 
+Paraphrases:
 how many counties are there in albania?
 what is the count of counties in albania?
 what is the total number of counties in albania?

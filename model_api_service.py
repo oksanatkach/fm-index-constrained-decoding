@@ -31,7 +31,6 @@ class VLLMService:
     def __init__(self, model_path: str):
         print(f"Loading model from {model_path}...")
         self.model = vllm.LLM(model=model_path,
-                              enable_prefix_caching=True,
                               task="generate",
                               max_model_len=32768,
                               **{"compilation_config": {
