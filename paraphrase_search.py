@@ -46,6 +46,9 @@ def get_paraphrase_scores(output_token_ids: List[int], output_token_logprobs: Li
             scores.append(score)
             paraphrases_output_tokens.append(paraphrase)
             score = 0
+            paraphrase = []
+    scores.append(score)
+    paraphrases_output_tokens.append(paraphrase)
 
     return paraphrases_output_tokens, scores
 
