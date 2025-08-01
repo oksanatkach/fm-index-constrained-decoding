@@ -28,10 +28,10 @@ def get_output_token_ids(prompt_token_ids: List[int]) -> List[int]:
 
 def get_paraphrase_scores(output_token_ids: List[int], output_token_logprobs: List[Tuple[int, float]])\
         -> Tuple[List[List[int]], List[float]]:
-    if output_token_ids[:len(output_token_ids)] == output_token_ids:
-        output_token_ids = output_token_ids[len(output_token_ids):]
+    if output_token_ids[:len(beginning_tokens)] == beginning_tokens:
+        output_token_ids = output_token_ids[len(beginning_tokens):]
 
-    assert len(output_token_ids) == len(output_token_logprobs)
+    assert len(output_token_ids)-1 == len(output_token_logprobs)
 
     scores = []
     paraphrases_output_tokens = []
