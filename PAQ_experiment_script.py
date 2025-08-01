@@ -3,7 +3,7 @@ import json
 import argparse
 
 
-def run_experiment(FILE_I, FILE_O, URL, paraphrase):
+def run_experiment(FILE_I, FILE_O, URL):
     with open(FILE_I, newline='', encoding='utf-8') as in_file:
         with open(FILE_O, 'w', newline='', encoding='utf-8') as out_file:
             for line in in_file:
