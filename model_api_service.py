@@ -28,7 +28,7 @@ class PromptTokenIdsResponse(BaseModel):
     prompt_token_ids: List[int]
 
 class VLLMService:
-    def __init__(self, model_path: str, prompt_file: str):
+    def __init__(self, model_path: str):
         print(f"Loading model from {model_path}...")
         self.model = vllm.LLM(model=model_path,
                               enable_prefix_caching=True,
@@ -144,8 +144,7 @@ async def startup_event():
     global service
     # These will be set by the main function
     model_path = getattr(app.state, 'model_path', "/home/qwen3-8b")
-    prompt_file = getattr(app.state, 'prompt_file', 'PAQ_prompt_paraphrase.txt')
-    service = VLLMService(model_path, prompt_file)
+    service = VLLMService(model_path)
 
 
 @app.get("/")
@@ -259,7 +258,6 @@ def main():
 
     # Store config in app state for startup event
     app.state.model_path = args.model
-    app.state.prompt_file = args.prompt_file
 
     print(f"Starting VLLM API server on {args.host}:{args.port}")
     uvicorn.run(app, host=args.host, port=args.port)
