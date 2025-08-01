@@ -241,7 +241,7 @@ async def chat_get_output(request: QuestionRequest):
         raise HTTPException(status_code=500, detail=f"Error generating output: {str(e)}")
 
 
-@app.post("/chat_get_prompt_token_ids", response_model=AnswerResponse)
+@app.post("/chat_get_prompt_token_ids", response_model=PromptTokenIdsResponse)
 async def chat_get_prompt_token_ids(request: QuestionRequest):
     if service is None:
         raise HTTPException(status_code=503, detail="Model not loaded yet")
