@@ -106,12 +106,12 @@ class VLLMService:
 
     def chat_get_output(self, question: str, prompt: str, max_tokens: int = 100, n: int = 1,
                         top_p: float = 1.0, min_tokens: int = 50, temperature: float = 0.0,
-                        stop_tokens: list = None) -> list[RequestOutput]:
+                        stop_tokens: list = None) -> Dict[str, any]:
         # Default stop tokens for Qwen models
         if stop_tokens is None:
             stop_tokens = ["<|endoftext|>", "<|im_end|>", "\n\n", "</think>"]
 
-        return self.model.chat(
+        output = self.model.chat(
             messages=[{"role": "user", "content": f"{prompt} {question}"}],
             sampling_params=vllm.SamplingParams(
                 max_tokens=max_tokens,
@@ -125,6 +125,7 @@ class VLLMService:
             ),
             chat_template_kwargs={"enable_thinking": False}
         )
+        return output.__dict__
 
     def chat_get_prompt_token_ids(self, question: str, prompt: str) -> List[int]:
         prompt_token_ids_output = self.model.get_chat_prompt_token_ids(
