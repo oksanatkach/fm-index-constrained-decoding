@@ -12,6 +12,8 @@ class QuestionRequest(BaseModel):
     max_tokens: Optional[int] = 100
     min_tokens: Optional[int] = 50
     temperature: Optional[float] = 0.0
+    n: Optional[int] = 1
+    top_p: Optional[float] = 1.0
     stop_tokens: Optional[list] = None
 
 
@@ -52,7 +54,7 @@ class VLLMService:
             stop_tokens = ["<|endoftext|>", "<|im_end|>", "\n\n", "</think>"]
 
         output = self.model.generate(
-            prompts=f"{self.prompt} {question} </think>",
+            prompts=f"{self.prompt} {question}",
             sampling_params=vllm.SamplingParams(
                 max_tokens=max_tokens,
                 min_tokens=min_tokens,
@@ -66,29 +68,30 @@ class VLLMService:
         )
         return output[0].outputs[0].text
 
-    def generate_answer_custom(self, question: str, max_tokens: int = 100,
-                        min_tokens: int = 50, temperature: float = 0.0,
-                        stop_tokens: list = None) -> str:
+    def generate_answer_custom(self, question: str, max_tokens: int = 100, n: int = 1, top_p: float = 1.0,
+                   min_tokens: int = 50, temperature: float = 0.0,
+                   stop_tokens: list = None) -> str:
         # Default stop tokens for Qwen models
         if stop_tokens is None:
             stop_tokens = ["<|endoftext|>", "<|im_end|>", "\n\n", "</think>"]
 
-        output = self.model.generate(
-            prompts=f"{question} </think>",
+        output = self.model.chat(
+            messages=[{"role": "user", "content": question}],
             sampling_params=vllm.SamplingParams(
                 max_tokens=max_tokens,
                 min_tokens=min_tokens,
                 temperature=temperature,
-                n=1,
-                top_p=1.0,
+                n=n,
+                top_p=top_p,
                 top_k=0,
                 min_p=0.0,
                 stop=stop_tokens
-            )
+            ),
+            chat_template_kwargs={"enable_thinking": False}
         )
         return output[0].outputs[0].text
 
-    def chat(self, question: str, max_tokens: int = 100,
+    def chat(self, question: str, max_tokens: int = 100, n: int = 1, top_p: float = 1.0,
                    min_tokens: int = 50, temperature: float = 0.0,
                    stop_tokens: list = None) -> str:
         # Default stop tokens for Qwen models
@@ -101,11 +104,11 @@ class VLLMService:
                 max_tokens=max_tokens,
                 min_tokens=min_tokens,
                 temperature=temperature,
-                n=1,
-                top_p=1.0,
+                n=n,
+                top_p=top_p,
                 top_k=0,
                 min_p=0.0,
-                stop=stop_tokens
+#                stop=stop_tokens
             ),
             chat_template_kwargs={"enable_thinking": False}
         )
@@ -124,7 +127,7 @@ async def startup_event():
     global service
     # These will be set by the main function
     model_path = getattr(app.state, 'model_path', "/home/qwen3-8b")
-    prompt_file = getattr(app.state, 'prompt_file', 'PAQ_prompt.txt')
+    prompt_file = getattr(app.state, 'prompt_file', 'PAQ_prompt_exp_2.txt')
     service = VLLMService(model_path, prompt_file)
 
 
@@ -151,6 +154,7 @@ async def ask_question(request: QuestionRequest):
             temperature=request.temperature,
             stop_tokens=request.stop_tokens
         )
+        print(answer)
         return AnswerResponse(answer=answer)
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error generating answer: {str(e)}")
@@ -182,6 +186,7 @@ async def ask_question_custom(request: QuestionRequest):
     try:
         answer = service.chat(
             question=request.question,
+            n=request.n,
             max_tokens=request.max_tokens,
             min_tokens=request.min_tokens,
             temperature=request.temperature,
@@ -195,7 +200,7 @@ async def ask_question_custom(request: QuestionRequest):
 def main():
     parser = argparse.ArgumentParser(description='Start VLLM API server')
     parser.add_argument('--model', default="/home/qwen3-8b", help='Path to the model')
-    parser.add_argument('--prompt-file', default='PAQ_prompt.txt', help='Path to the prompt file')
+    parser.add_argument('--prompt-file', default='PAQ_prompt_exp_2.txt', help='Path to the prompt file')
     parser.add_argument('--host', default="127.0.0.1", help='Host to bind to')
     parser.add_argument('--port', type=int, default=8001, help='Port to bind to')
 
