@@ -1,4 +1,4 @@
-Repeat the question in lowercase and immediately answer it like below.
+Repeat the question and immediately answer it like below.
 
 Question: who was president when the first peanuts cartoon was published? Answer: Presidency of Harry S. Truman
 
