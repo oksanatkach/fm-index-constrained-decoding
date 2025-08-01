@@ -72,7 +72,7 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
-    run_experiment(args.input, args.output, args.stage, args.url)
+    run_experiment(args.input, args.output, int(args.stage), args.url)
 
 # modify llm.py in vllm to add a function that returns input_token_ids
 # add get_output method to model api
