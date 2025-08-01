@@ -2,10 +2,10 @@ Repeat the question in lowercase and immediately answer it like below.
 
 Question: who was president when the first peanuts cartoon was published? Answer: Presidency of Harry S. Truman
 
-Question: which american-born sinclair won the nobel prize for literature in 1930? Answer: (Harry) Sinclair Lewis
+Question: in basketball where do the celtics come from? Answer: City of Boston
 
 Question: in which decade did billboard magazine first publish and american hit chart? Answer: 30's
 
-Question: who won super bowl xx? Answer: Chicago Bears
+Question: how long is the average pool cue? Answer: eighty-five thousand distance
 
 Question:
