@@ -125,7 +125,7 @@ class VLLMService:
             ),
             chat_template_kwargs={"enable_thinking": False}
         )
-        return [el.__dict__ for el in output]
+        return [{'prompt_token_ids': el.prompt_token_ids} for el in output]
 
     def chat_get_prompt_token_ids(self, question: str, prompt: str) -> List[int]:
         prompt_token_ids_output = self.model.get_chat_prompt_token_ids(
