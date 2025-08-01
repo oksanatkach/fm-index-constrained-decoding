@@ -29,7 +29,7 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
-    run_experiment(args.input, args.output, args.url, args.paraphrase)
+    run_experiment(args.input, args.output, args.url)
 
 
 # list of what to test
