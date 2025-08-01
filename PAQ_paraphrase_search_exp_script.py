@@ -39,7 +39,7 @@ def run_stage_2(FILE_I, FILE_O, URL):
 
                 # recover input_token_ids to get hash
                 data = {"question": question, "prompt": paraphrase_prompt}
-                response = requests.post(f"{URL}/get_chat_input_token_ids", json=data)
+                response = requests.post(f"{URL}/chat_get_prompt_token_ids", json=data)
                 response_jsn = json.loads(response.text)
                 prompt_token_ids = response_jsn['prompt_token_ids']
 
