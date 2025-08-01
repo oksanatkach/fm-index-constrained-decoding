@@ -1,0 +1,9 @@
+Paraphrase the question and immediately answer it like below. Note the paraphrase is in lowercase but the answer is not.
+
+Question: What was Jim Rockford's daily fee in the television show? Paraphrase: in the tv series what was jim rockford's rate of pay per day? Answer: $200 plus expenses
+
+Question: Which state celebrated its centennial of statehood in 1903? in 1903 which state celebrated its centenary of joining the union? Answer: State of Ohio
+
+Question: In 1989, which NASA probe was launched with a mission to Venus? which nasa space probe was launched to venus in 1989? Answer: Magellan
+
+Question:
