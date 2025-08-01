@@ -32,7 +32,7 @@ if __name__ == '__main__':
     parser.add_argument('--input', '-i', required=True, help='Path to input TSV file')
     parser.add_argument('--output', '-o', required=True, help='Path to output TSV file')
     parser.add_argument('--url', '-u', default='http://127.0.0.1:8001/chat', help='URL for the API endpoint')
-    parser.add_argument('--paraphrase', '-u', default='True', help='Paraphrase flag')
+    parser.add_argument('--paraphrase', '-u', default=True, help='Paraphrase flag')
 
     args = parser.parse_args()
 
