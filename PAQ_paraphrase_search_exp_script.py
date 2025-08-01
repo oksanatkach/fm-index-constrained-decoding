@@ -67,7 +67,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="Run PAQ experiment")
     parser.add_argument('--input', '-i', required=True, help='Path to input TSV file')
     parser.add_argument('--output', '-o', required=True, help='Path to output TSV file')
-    parser.add_argument('--stage', '-s', required=True, options=[1,2], help='Experiment stage')
+    parser.add_argument('--stage', '-s', required=True, help='Experiment stage')
     parser.add_argument('--url', '-u', default='http://127.0.0.1:8001/', help='URL for the API endpoint')
 
     args = parser.parse_args()
