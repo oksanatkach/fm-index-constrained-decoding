@@ -4,20 +4,26 @@ beginning of string: "Paraphrases:\n"
 separators: \n
 """
 from typing import List, Tuple
+import json
 
 log_path = "/home/tmp/"
 beginning_tokens = []
 separator_tokens = [198, 715, 2303, 5872, 271, 4710, 18611]
 
 def get_logprobs(prompt_token_ids: List[int]) -> List[Tuple[int, float]]:
-    log_filename = hash(tuple(prompt_token_ids))
-    file_path = f"{log_path}{log_filename}.log"
+    tokens_hash = hash(tuple(prompt_token_ids))
+    file_path = f"{log_path}{tokens_hash}.logprobs"
     logprobs = []
     with open(file_path, "r", encoding="utf-8") as f:
         for line in f:
             key, value = line.strip().split("\t")
             logprobs.append((int(key), float(value)))
     return logprobs
+
+def get_output_token_ids(prompt_token_ids: List[int]) -> List[int]:
+    log_filename = hash(tuple(prompt_token_ids))
+    file_path = f"{log_path}{log_filename}.output_token_ids"
+    return json.load(open(file_path, "r", encoding="utf-8"))
 
 
 def get_paraphrase_scores(output_token_ids: List[int], output_token_logprobs: List[Tuple[int, float]])\
@@ -43,14 +49,9 @@ def get_paraphrase_scores(output_token_ids: List[int], output_token_logprobs: Li
 
     return paraphrases_output_tokens, scores
 
-def get_best_paraphrase(prompt_token_ids, output_token_ids):
+def get_best_paraphrase(prompt_token_ids):
     output_token_logprobs = get_logprobs(prompt_token_ids)
+    output_token_ids = get_output_token_ids(prompt_token_ids)
     paraphrases_output_tokens, scores = get_paraphrase_scores(output_token_ids, output_token_logprobs)
     argmax_paraphrase = max(range(len(scores)), key=lambda i: scores[i])
     return paraphrases_output_tokens[argmax_paraphrase]
-
-# TODO:
-# fill tokens above
-# call get_best_paraphrase in exp6 script
-# use tokenizer to decode --- this is redundant but more stable
-# call /chat with repeat prompt

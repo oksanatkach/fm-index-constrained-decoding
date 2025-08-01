@@ -106,3 +106,11 @@ TKNSR=meta-llama/Llama-3.2-1B-Instruct
 python build_fm_index.py $FILE_I $FILE_O --hf_model $TKNSR --jobs 40 --include_title
 
 ```
+
+### Evaluating using lm-evaluation-harness
+
+```commandline
+git clone --depth 1 https://github.com/EleutherAI/lm-evaluation-harness
+cd lm-evaluation-harness
+pip install -e .
+```

@@ -69,7 +69,8 @@ class DistinctResponse(BaseModel):
 async def lifespan(app: FastAPI):
     # Startup: Load the FM-Index
     global fm_index
-    index_path = os.getenv("FM_INDEX_PATH", "data/mac/enwiki.qwen3_8b.fm_index")
+    # index_path = os.getenv("FM_INDEX_PATH", "data/mac/enwiki.qwen3_8b.fm_index")
+    index_path = os.getenv("FM_INDEX_PATH", "data/PAQ/PAQ_index/PAQ.fm_index")
 
     logger.info(f"Loading FM-Index from {index_path}...")
     start_time = time.time()
