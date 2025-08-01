@@ -94,14 +94,20 @@ class VLLMService:
         if stop_tokens is None:
             stop_tokens = ["<|endoftext|>", "<|im_end|>", "\n\n", "</think>"]
 
-        output = self.chat_get_output(question=question,
-                                      prompt=prompt,
-                                      max_tokens=max_tokens,
-                                      n=n,
-                                      top_p=top_p,
-                                      min_tokens=min_tokens,
-                                      temperature=temperature,
-                                      stop_tokens=stop_tokens)
+        output = self.model.chat(
+            messages=[{"role": "user", "content": f"{prompt} {question}"}],
+            sampling_params=vllm.SamplingParams(
+                max_tokens=max_tokens,
+                min_tokens=min_tokens,
+                temperature=temperature,
+                n=n,
+                top_p=top_p,
+                top_k=0,
+                min_p=0.0,
+                #                stop=stop_tokens
+            ),
+            chat_template_kwargs={"enable_thinking": False}
+        )
         return output[0].outputs[0].text
 
     def chat_get_output(self, question: str, prompt: str, max_tokens: int = 100, n: int = 1,
@@ -214,7 +220,7 @@ async def chat(request: QuestionRequest):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error generating answer: {str(e)}")
 
-@app.post("/chat_get_output", response_model=AnswerResponse)
+@app.post("/chat_get_output", response_model=OutputResponse)
 async def chat_get_output(request: QuestionRequest):
     if service is None:
         raise HTTPException(status_code=503, detail="Model not loaded yet")
