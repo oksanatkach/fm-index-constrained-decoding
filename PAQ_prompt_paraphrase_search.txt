@@ -1,9 +1,12 @@
-Paraphrase this sentence in lower case in exactly 5 different ways, starting with different words, separate the different versions with newlines, like so:
-Question: What is the number of counties in Albania?
+Come up with 5 different beginnings (up to 4 words) that could start a paraphrase of the sentence below. Separate each beginning variant with a newline. Example:
 
-Paraphrases:
-how many counties are there in albania?
-what is the count of counties in albania?
-what is the total number of counties in albania?
-how many administrative divisions does albania have?
-what is the number of regions in albania?
+Sentence: What is the number of counties in Albania?
+
+Paraphrase beginnings:
+how many counties
+what is the count
+what is the total number
+how many administrative
+what is the number
+
+Sentence:
