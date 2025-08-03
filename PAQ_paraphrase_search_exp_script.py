@@ -111,7 +111,7 @@ def run_stage_3(FILE_I, FILE_O, URL):
 
                 beginning_scores = [sum(beginning_logprobs) for beginning_logprobs in beginning_logprobs_lst]
                 argmax_paraphrase = max(range(len(beginning_scores)), key=lambda i: beginning_scores[i])
-                best_paraphrase = beginning_tokens[argmax_paraphrase]
+                best_paraphrase = beginning_tokens_lst[argmax_paraphrase]
 
                 # find the most successful paraphrase
                 # better_question_tokens = get_best_paraphrase(prompt_token_ids)
