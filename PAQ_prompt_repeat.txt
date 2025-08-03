@@ -1,4 +1,4 @@
-Repeat the question and immediately answer it like below.
+Repeat the question in lower case and immediately answer it like below.
 
 Question: in the tv series what was jim rockford's rate of pay per day? Answer: $200 plus expenses
 
