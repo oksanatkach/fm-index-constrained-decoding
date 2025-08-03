@@ -1,6 +1,7 @@
 import requests
 import json
 import argparse
+from typing import List, Tuple
 from paraphrase_search import get_best_paraphrase
 from transformers import AutoTokenizer
 
@@ -44,6 +45,15 @@ def get_beginnings(question, prompt, URL):
     with open(f"{log_path}{tokens_hash}.beginnings", 'r') as beginnings_fh:
         beginnings = beginnings_fh.read().strip().split('\n')
     return beginnings
+
+def get_logprobs(tokens_hash) -> List[float]:
+    file_path = f"{log_path}{tokens_hash}.logprobs"
+    logprobs = []
+    with open(file_path, "r", encoding="utf-8") as f:
+        for line in f:
+            key, value = line.strip().split("\t")
+            logprobs.append(float(value))
+    return logprobs
 
 def run_stage_1(FILE_I, URL):
     with open("PAQ_prompt_paraphrase_search.txt", 'r') as fh:
@@ -96,9 +106,8 @@ def run_stage_3(FILE_I, FILE_O, URL):
                         beginning_tokens = json.load(beginning_tokens_fh)
                         beginning_tokens_lst.append(beginning_tokens)
 
-                    with open(f"{log_path}{beginning_tokens_hash}.logprobs", 'r') as beginning_logprobs_fh:
-                        beginning_logprobs = json.load(beginning_logprobs_fh)
-                        beginning_logprobs_lst.append(beginning_logprobs)
+                    beginning_logprobs = get_logprobs(beginning_tokens_hash)
+                    beginning_logprobs_lst.append(beginning_logprobs)
 
                 beginning_scores = [sum(beginning_logprobs) for beginning_logprobs in beginning_logprobs_lst]
                 argmax_paraphrase = max(range(len(beginning_scores)), key=lambda i: beginning_scores[i])
@@ -137,3 +146,9 @@ if __name__ == '__main__':
 # modify llm.py in vllm to add a function that returns input_token_ids
 # add get_output method to model api
 # add get_chat_input_token_ids to model api
+
+
+
+# (venv) root@pminervini-lm-eval-x8gfg-qmlzl:/home/fm-index-constrained-decoding# cat /home/tmp/8640584250548683661.output_token_ids
+# [15191, 572, 4767, 518, 279, 882, 279, 1156, 5139, 72752, 19724, 13316, 57085, 30, 151645]
+# [15191, 572, 4767, 518, 279, 882, 279, 1156, 5139, 72752, 19724, 13316, 57085, 30, 151645]
