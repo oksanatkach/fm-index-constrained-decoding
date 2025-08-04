@@ -271,7 +271,7 @@ async def chat_batch(request: BatchQuestionRequest):
 
     try:
         answers = service.chat_batch(
-            question=request.questions,
+            questions=request.questions,
             prompt=request.prompt,
             n=request.n,
             max_tokens=request.max_tokens,
