@@ -26,8 +26,21 @@ class QuestionRequest(BaseModel):
     top_p: Optional[float] = 1.0
     stop_tokens: Optional[list] = None
 
+class BatchQuestionRequest(BaseModel):
+    questions: List[str]
+    prompt: Optional[str]
+    max_tokens: Optional[int] = 100
+    min_tokens: Optional[int] = 50
+    temperature: Optional[float] = 0.0
+    n: Optional[int] = 1
+    top_p: Optional[float] = 1.0
+    stop_tokens: Optional[list] = None
+
 class AnswerResponse(BaseModel):
     answer: str
+
+class BatchAnswerResponse(BaseModel):
+    answers: List[str]
 
 class OutputResponse(BaseModel):
     output: Dict
@@ -116,6 +129,29 @@ class VLLMService:
             chat_template_kwargs={"enable_thinking": False}
         )
         return output[0].outputs[0].text
+
+    def chat_batch(self, questions: List[str], prompt: str, max_tokens: int = 100, n: int = 1,
+             top_p: float = 1.0, min_tokens: int = 50, temperature: float = 0.0,
+             stop_tokens: list = None) -> List[str]:
+        if stop_tokens is None:
+            stop_tokens = ["<|endoftext|>", "<|im_end|>", "\n\n", "</think>"]
+
+        messages = [{"role": "user", "content": f"{prompt} {question}"} for question in questions]
+        output = self.model.chat(
+            messages=messages,
+            sampling_params=vllm.SamplingParams(
+                max_tokens=max_tokens,
+                min_tokens=min_tokens,
+                temperature=temperature,
+                n=n,
+                top_p=top_p,
+                top_k=0,
+                min_p=0.0,
+                #                stop=stop_tokens
+            ),
+            chat_template_kwargs={"enable_thinking": False}
+        )
+        return [request.outputs[0].text for request in output]
 
     def chat_get_output(self, question: str, prompt: str, max_tokens: int = 100, n: int = 1,
                         top_p: float = 1.0, min_tokens: int = 50, temperature: float = 0.0,
@@ -227,6 +263,26 @@ async def chat(request: QuestionRequest):
         return AnswerResponse(answer=answer)
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error generating answer: {str(e)}")
+
+@app.post("/chat_batch", response_model=BatchAnswerResponse)
+async def chat_batch(request: BatchQuestionRequest):
+    if service is None:
+        raise HTTPException(status_code=503, detail="Model not loaded yet")
+
+    try:
+        answers = service.chat_batch(
+            question=request.questions,
+            prompt=request.prompt,
+            n=request.n,
+            max_tokens=request.max_tokens,
+            min_tokens=request.min_tokens,
+            temperature=request.temperature,
+            stop_tokens=request.stop_tokens
+        )
+        return BatchAnswerResponse(answers=answers)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error generating answer: {str(e)}")
+
 
 @app.post("/chat_get_output", response_model=OutputResponse)
 async def chat_get_output(request: QuestionRequest):
