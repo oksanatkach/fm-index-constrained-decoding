@@ -136,9 +136,9 @@ class VLLMService:
         if stop_tokens is None:
             stop_tokens = ["<|endoftext|>", "<|im_end|>", "\n\n", "</think>"]
 
-        messages = [{"role": "user", "content": f"{prompt} {question}"} for question in questions]
+        batch_messages = [[{"role": "user", "content": f"{prompt} {question}"}] for question in questions]
         output = self.model.chat(
-            messages=messages,
+            messages=batch_messages,
             sampling_params=vllm.SamplingParams(
                 max_tokens=max_tokens,
                 min_tokens=min_tokens,
