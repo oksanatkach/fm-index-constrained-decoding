@@ -41,11 +41,11 @@ if __name__ == '__main__':
     # test_data_path = "/"
     # experiment_results_path = "test_data/results/exp1.tsv"
 
-    # parser = argparse.ArgumentParser(description="Run PAQ experiment evaluation")
-    # parser.add_argument('--testset', '-t', required=True, help='Path to test set TSV file')
-    # parser.add_argument('--experiment', '-e', required=True, help='Path to experiment results TSV file')
+    parser = argparse.ArgumentParser(description="Run PAQ experiment evaluation")
+    parser.add_argument('--testset', '-t', required=True, help='Path to test set TSV file')
+    parser.add_argument('--experiment', '-e', required=True, help='Path to experiment results TSV file')
 
-    # args = parser.parse_args()
-    # main(args.testset, args.experiment)
+    args = parser.parse_args()
+    main(args.testset, args.experiment)
 
-    main("test_data/PAQ_testset.tsv", "test_data/results/exp1.tsv")
+    # main("test_data/PAQ_testset.tsv", "test_data/results/exp1.tsv")
