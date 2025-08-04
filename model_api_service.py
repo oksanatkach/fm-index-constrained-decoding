@@ -1,11 +1,13 @@
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 import vllm
-from vllm.outputs import RequestOutput
 import uvicorn
 import argparse
-import sys
+import logging
 from typing import Optional, List, Dict
+
+logger = logging.getLogger()
+logger.setLevel(logging.ERROR)
 
 
 class QuestionRequest(BaseModel):
