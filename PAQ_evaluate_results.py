@@ -10,26 +10,35 @@ def parse_line(line):
     question, answer = tuple(text.split(' Answer: '))
     return line_id, question, answer
 
-def line_generator(filename, proc_func):
+def line_generator(filename):
     with open(filename, "r") as fh:
         for line in fh:
-            yield proc_func(line)
+            yield line
 
 def main(test_data_path, experiment_results_path):
-    test_set = line_generator(test_data_path, parse_line)
-    exp_results = line_generator(experiment_results_path, parse_exp_results_line)
+    test_set = line_generator(test_data_path)
+    exp_results = line_generator(experiment_results_path)
     n_exact_matches = 0
-    for exp_line_id, _, exp_answer in exp_results:
-        testset_line_id, _, testset_answer = next(test_set)
-        assert exp_line_id == testset_line_id
-        if exp_answer == testset_answer:
-            n_exact_matches += 1
+    for line in exp_results:
+        try:
+            exp_line_id, _, exp_answer = parse_exp_results_line(line)
+            line = next(test_set)
+            testset_line_id, _, testset_answer = parse_line(line)
+
+            while exp_line_id != testset_line_id:
+                line = next(test_set)
+                testset_line_id, _, testset_answer = parse_line(line)
+
+            if exp_answer == testset_answer:
+                n_exact_matches += 1
+        except:
+            pass
 
     print("Experiment:", experiment_results_path)
     print("Exact match accuracy:", n_exact_matches)
 
 if __name__ == '__main__':
-    # test_data_path = "test_data/PAQ_testset.tsv"
+    # test_data_path = "/"
     # experiment_results_path = "test_data/results/exp1.tsv"
 
     parser = argparse.ArgumentParser(description="Run PAQ experiment evaluation")
