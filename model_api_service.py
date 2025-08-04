@@ -6,8 +6,14 @@ import argparse
 import logging
 from typing import Optional, List, Dict
 
-logger = logging.getLogger()
-logger.setLevel(logging.ERROR)
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    handlers=[
+        logging.StreamHandler(),  # Console output
+    ]
+)
+logger = logging.getLogger(__name__)
 
 
 class QuestionRequest(BaseModel):
@@ -269,7 +275,7 @@ def main():
     app.state.model_path = args.model
 
     print(f"Starting VLLM API server on {args.host}:{args.port}")
-    uvicorn.run(app, host=args.host, port=args.port)
+    uvicorn.run(app, host=args.host, port=args.port, log_level="error")
 
 
 if __name__ == "__main__":
