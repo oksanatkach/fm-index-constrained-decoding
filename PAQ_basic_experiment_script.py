@@ -32,11 +32,11 @@ def run_experiment(FILE_I, FILE_O, prompt_file_path, URL):
                 system_answer = response_jsn['answer']
                 out_file.write(line_id + '\t' + system_answer + '\n')
 
-def run_experiment_batch(FILE_I, FILE_O, prompt_file_path, URL):
+def run_experiment_batch(FILE_I, FILE_O, prompt_file_path, URL, batch_size):
     with open(prompt_file_path, 'r') as fh:
         prompt = fh.read().strip()
         with open(FILE_O, 'w', newline='', encoding='utf-8') as out_file:
-            for batch in read_in_batches(FILE_I, 100):
+            for batch in read_in_batches(FILE_I, batch_size):
 
                 questions = [question for _, question, _ in batch]
 
@@ -59,14 +59,16 @@ if __name__ == '__main__':
     parser.add_argument('--output', '-o', required=True, help='Path to output TSV file')
     parser.add_argument('--prompt', '-p', required=True, help='Path to prompt file')
     parser.add_argument('--url', '-u', default='http://127.0.0.1:8001', help='URL for the API endpoint')
-    parser.add_argument('--batch', '-b', default=False, help='Batch the requests?')
+    parser.add_argument('--batch', '-b', default=1, help='Batch size')
 
     args = parser.parse_args()
+    args.batch = int(args.batch)
 
-    if args.batch:
-        run_experiment_batch(args.input, args.output, args.prompt, args.url)
-    else:
+    assert args.batch > 0
+    if args.batch == 1:
         run_experiment(args.input, args.output, args.prompt, args.url)
+    else:
+        run_experiment_batch(args.input, args.output, args.prompt, args.url, args.batch)
 
 
 # list of what to test
