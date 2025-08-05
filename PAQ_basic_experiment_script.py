@@ -12,7 +12,7 @@ def read_in_batches(filename, batch_size):
             yield batch
 
 def parse_line(line):
-    line_id, _, text = tuple(line.strip().split('\t'))
+    line_id, text = tuple(line.strip().split('\t'))
     question, answer = tuple(text.split(' Answer: '))
     return line_id, question, answer
 
@@ -22,7 +22,7 @@ def run_experiment(FILE_I, FILE_O, prompt_file_path, URL):
     with open(FILE_I, newline='', encoding='utf-8') as in_file:
         with open(FILE_O, 'w', newline='', encoding='utf-8') as out_file:
             for line in in_file:
-                line_id, _, text = tuple(line.strip().split('\t'))
+                line_id, text = tuple(line.strip().split('\t'))
                 question, answer = tuple(text.split(' Answer: '))
                 data = {"question": question,
                         "prompt": prompt,
