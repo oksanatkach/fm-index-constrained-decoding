@@ -7,7 +7,7 @@ def parse_exp_results_line(line):
     return line_id, question.strip(), answer.strip()
 
 def parse_line(line):
-    line_id, _, text = tuple(line.strip().split('\t'))
+    line_id, text = tuple(line.strip().split('\t'))
     question, answer = tuple(text.split(' Answer: '))
     return line_id, question, answer
 
