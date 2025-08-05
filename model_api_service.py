@@ -112,7 +112,8 @@ class VLLMService:
              top_p: float = 1.0, min_tokens: int = 50, temperature: float = 0.0,
              stop_tokens: list = None) -> str:
         if stop_tokens is None:
-            stop_tokens = ["<|endoftext|>", "<|im_end|>", "\n\n", "</think>"]
+            # stop_tokens = ["<|endoftext|>", "<|im_end|>", "\n\n", "</think>"]
+            stop_tokens = [self.model.get_tokenizer().eos_token_id]
 
         output = self.model.chat(
             messages=[{"role": "user", "content": f"{prompt} {question}"}],
@@ -125,6 +126,7 @@ class VLLMService:
                 top_k=0,
                 min_p=0.0,
                 #                stop=stop_tokens
+                stop_token_ids=stop_tokens
             ),
             chat_template_kwargs={"enable_thinking": False}
         )
@@ -134,7 +136,8 @@ class VLLMService:
              top_p: float = 1.0, min_tokens: int = 50, temperature: float = 0.0,
              stop_tokens: list = None) -> List[str]:
         if stop_tokens is None:
-            stop_tokens = ["<|endoftext|>", "<|im_end|>", "\n\n", "</think>"]
+            # stop_tokens = ["<|endoftext|>", "<|im_end|>", "\n\n", "</think>"]
+            stop_tokens = [self.model.get_tokenizer().eos_token_id]
 
         batch_messages = [[{"role": "user", "content": f"{prompt} {question}"}] for question in questions]
         output = self.model.chat(
@@ -148,6 +151,7 @@ class VLLMService:
                 top_k=0,
                 min_p=0.0,
                 #                stop=stop_tokens
+                stop_token_ids=stop_tokens
             ),
             chat_template_kwargs={"enable_thinking": False}
         )
