@@ -1,8 +1,9 @@
 import argparse
+import re
 
 def parse_exp_results_line(line):
     line_id, text = tuple(line.strip().split('\t'))
-    question, answer = tuple(text.split('Answer:'))
+    question, answer = tuple(re.split(r'(?i)answer:', text))
     return line_id, question.strip(), answer.strip()
 
 def parse_line(line):
