@@ -31,6 +31,8 @@ def run_experiment(FILE_I, FILE_O, prompt_file_path, URL):
                 response_jsn = json.loads(response.text)
                 system_answer = response_jsn['answer']
                 system_answer = system_answer.replace('\n', '')
+                if '</think>' in system_answer:
+                    system_answer = system_answer.split('</think>')[-1]
                 out_file.write(line_id + '\t' + system_answer + '\n')
 
 def run_experiment_batch(FILE_I, FILE_O, prompt_file_path, URL, batch_size):
@@ -49,6 +51,8 @@ def run_experiment_batch(FILE_I, FILE_O, prompt_file_path, URL, batch_size):
                 system_answers = response_jsn['answers']
                 for ind, system_answer in enumerate(system_answers):
                     system_answer = system_answer.replace('\n', '')
+                    if '</think>' in system_answer:
+                        system_answer = system_answer.split('</think>')[-1]
                     out_file.write(batch[ind][0] + '\t' + system_answer + '\n')
 
 if __name__ == '__main__':
