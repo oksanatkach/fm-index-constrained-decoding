@@ -137,7 +137,7 @@ def run_stage_1_batch(FILE_I, URL, batch_size):
 
     for batch in read_in_batches(FILE_I, batch_size):
         questions = [question for _, question, _ in batch]
-        data = {"question": questions,
+        data = {"questions": questions,
                 "prompt": prompt,
                 "temperature": 0.0, "min_tokens": 10, "n": 1, "top_n": 1.0}
         # this should be run with FM index disabled
@@ -145,9 +145,9 @@ def run_stage_1_batch(FILE_I, URL, batch_size):
         response_jsn = json.loads(response.text)
         system_answers = response_jsn['answers']
         for ind, system_answer in enumerate(system_answers):
-            system_answer = system_answer.replace('\n', '')
-            if '</think>' in system_answer:
-                system_answer = system_answer.split('</think>')[-1]
+            # system_answer = system_answer.replace('\n', '')
+            # if '</think>' in system_answer:
+            #     system_answer = system_answer.split('</think>')[-1]
 
             tokens_hash = get_tokens_hash(questions[ind], prompt, URL)
             with open(f"{log_path}{tokens_hash}.beginnings", 'w') as out_file:
