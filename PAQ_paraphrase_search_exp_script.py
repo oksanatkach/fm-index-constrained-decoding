@@ -85,7 +85,7 @@ def run_stage_2(FILE_I, URL):
 
             # this should be run with FM index enabled
             for beginning in beginnings:
-                prompt = f'Paraphrase this sentence starting with "{beginning}":'
+                prompt = f'Paraphrase this sentence in lowercase starting with "{beginning}":'
                 response_jsn = get_chat_output(question, prompt, URL)
                 beginning_tokens_hash = hash(tuple(response_jsn['prompt_token_ids']))
                 with open(f"{log_path}{beginning_tokens_hash}.output_token_ids", 'w') as beginning_tokens_fh:
