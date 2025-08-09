@@ -36,6 +36,14 @@ class BatchQuestionRequest(BaseModel):
     top_p: Optional[float] = 1.0
     stop_tokens: Optional[list] = None
 
+class BeamSearchBatchQuestionRequest(BaseModel):
+    questions: List[str]
+    prompt: Optional[str]
+    beam_width: int = 5
+    max_tokens: int = 100
+    temperature: float = 0.0
+    length_penalty: float = 1.0
+
 class AnswerResponse(BaseModel):
     answer: str
 
@@ -156,6 +164,26 @@ class VLLMService:
             chat_template_kwargs={"enable_thinking": False}
         )
         return [request.outputs[0].text for request in output]
+
+    def beam_search_chat_batch(self, questions: List[str], prompt: str, beam_width: int = 5, max_tokens: int = 100,
+                               temperature: float = 0.0, length_penalty: float = 1.0) -> List[str]:
+
+        batch_messages = [[{"role": "user", "content": f"{prompt} {question}"}] for question in questions]
+        batch_prompt_token_ids = self.model.get_chat_prompt_token_ids(messages=batch_messages)
+
+        batch_prompts = [vllm.inputs.TokensPrompt(prompt_token_ids=prompt_token_ids)
+                         for prompt_token_ids in batch_prompt_token_ids]
+
+        output = self.model.beam_search(prompts=batch_prompts,
+                                        params=vllm.sampling_params.BeamSearchParams(
+                                            beam_width=beam_width,
+                                            max_tokens=max_tokens,
+                                            ignore_eos=False,
+                                            temperature=temperature,
+                                            length_penalty=length_penalty,
+                                        )
+                                    )
+        return [request.sequences[0].text for request in output]
 
     def chat_get_output(self, question: str, prompt: str, max_tokens: int = 100, n: int = 1,
                         top_p: float = 1.0, min_tokens: int = 50, temperature: float = 0.0,
@@ -282,6 +310,24 @@ async def chat_batch(request: BatchQuestionRequest):
             min_tokens=request.min_tokens,
             temperature=request.temperature,
             stop_tokens=request.stop_tokens
+        )
+        return BatchAnswerResponse(answers=answers)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error generating answer: {str(e)}")
+
+@app.post("/beam_search_chat_batch", response_model=BatchAnswerResponse)
+async def beam_search_chat_batch(request: BeamSearchBatchQuestionRequest):
+    if service is None:
+        raise HTTPException(status_code=503, detail="Model not loaded yet")
+
+    try:
+        answers = service.beam_search_chat_batch(
+            questions=request.questions,
+            prompt=request.prompt,
+            beam_width=request.beam_width,
+            max_tokens=request.max_tokens,
+            temperature=request.temperature,
+            length_penalty=request.length_penalty
         )
         return BatchAnswerResponse(answers=answers)
     except Exception as e:

@@ -35,25 +35,70 @@ def run_experiment(FILE_I, FILE_O, prompt_file_path, URL):
                     system_answer = system_answer.split('</think>')[-1]
                 out_file.write(line_id + '\t' + system_answer + '\n')
 
+def run_experiment_beam_search(FILE_I, FILE_O, prompt_file_path, URL, beam_width):
+    with open(prompt_file_path, 'r') as fh:
+        prompt = fh.read().strip()
+    with open(FILE_I, newline='', encoding='utf-8') as in_file:
+        with open(FILE_O, 'w', newline='', encoding='utf-8') as out_file:
+            for line in in_file:
+                line_id, text = tuple(line.strip().split('\t'))
+                question, answer = tuple(text.split(' Answer: '))
+                data = {"questions": [question],
+                        "prompt": prompt,
+                        "beam_width": beam_width,
+                        "temperature": 0.0
+                        }
+                response = requests.post(f"{URL}/beam_search_chat_batch", json=data)
+                response_jsn = json.loads(response.text)
+                system_answer = response_jsn['answers'][0]
+                system_answer = system_answer.replace('\n', '')
+                if '</think>' in system_answer:
+                    system_answer = system_answer.split('</think>')[-1]
+                out_file.write(line_id + '\t' + system_answer + '\n')
+
 def run_experiment_batch(FILE_I, FILE_O, prompt_file_path, URL, batch_size):
     with open(prompt_file_path, 'r') as fh:
         prompt = fh.read().strip()
-        with open(FILE_O, 'w', newline='', encoding='utf-8') as out_file:
-            for batch in read_in_batches(FILE_I, batch_size):
+    with open(FILE_O, 'w', newline='', encoding='utf-8') as out_file:
+        for batch in read_in_batches(FILE_I, batch_size):
 
-                questions = [question for _, question, _ in batch]
+            questions = [question for _, question, _ in batch]
 
-                data = {"questions": questions,
-                        "prompt": prompt,
-                        "temperature": 0.0, "min_tokens": 10, "n": 1, "top_n": 1.0}
-                response = requests.post(f"{URL}/chat_batch", json=data)
-                response_jsn = json.loads(response.text)
-                system_answers = response_jsn['answers']
-                for ind, system_answer in enumerate(system_answers):
-                    system_answer = system_answer.replace('\n', '')
-                    if '</think>' in system_answer:
-                        system_answer = system_answer.split('</think>')[-1]
-                    out_file.write(batch[ind][0] + '\t' + system_answer + '\n')
+            data = {"questions": questions,
+                    "prompt": prompt,
+                    "temperature": 0.0, "min_tokens": 10, "n": 1, "top_n": 1.0}
+            response = requests.post(f"{URL}/chat_batch", json=data)
+            response_jsn = json.loads(response.text)
+            system_answers = response_jsn['answers']
+            for ind, system_answer in enumerate(system_answers):
+                system_answer = system_answer.replace('\n', '')
+                if '</think>' in system_answer:
+                    system_answer = system_answer.split('</think>')[-1]
+                out_file.write(batch[ind][0] + '\t' + system_answer + '\n')
+
+def run_experiment_batch_beam_search(FILE_I, FILE_O, prompt_file_path, URL, batch_size, beam_width):
+    with open(prompt_file_path, 'r') as fh:
+        prompt = fh.read().strip()
+    with open(FILE_O, 'w', newline='', encoding='utf-8') as out_file:
+        for batch in read_in_batches(FILE_I, batch_size):
+
+            questions = [question for _, question, _ in batch]
+
+            data = {"questions": questions,
+                    "prompt": prompt,
+                    "beam_width": beam_width,
+                    "temperature": 0.0
+                    }
+
+            response = requests.post(f"{URL}/beam_search_chat_batch", json=data)
+            response_jsn = json.loads(response.text)
+            system_answers = response_jsn['answers']
+            for ind, system_answer in enumerate(system_answers):
+                system_answer = system_answer.replace('\n', '')
+                if '</think>' in system_answer:
+                    system_answer = system_answer.split('</think>')[-1]
+                out_file.write(batch[ind][0] + '\t' + system_answer + '\n')
+
 
 if __name__ == '__main__':
     # URL = "http://127.0.0.1:8001/chat"
@@ -66,15 +111,26 @@ if __name__ == '__main__':
     parser.add_argument('--prompt', '-p', required=True, help='Path to prompt file')
     parser.add_argument('--url', '-u', default='http://127.0.0.1:8001', help='URL for the API endpoint')
     parser.add_argument('--batch', '-b', default=1, help='Batch size')
+    parser.add_argument('--beam', '-bs', default=1, help='Beam width')
 
     args = parser.parse_args()
     args.batch = int(args.batch)
+    args.beam = int(args.beam)
 
     assert args.batch > 0
-    if args.batch == 1:
-        run_experiment(args.input, args.output, args.prompt, args.url)
+    assert args.beam > 0
+
+    if args.beam == 1:
+        if args.batch == 1:
+            run_experiment(args.input, args.output, args.prompt, args.url)
+        else:
+            run_experiment_batch(args.input, args.output, args.prompt, args.url, args.batch)
+
     else:
-        run_experiment_batch(args.input, args.output, args.prompt, args.url, args.batch)
+        if args.batch == 1:
+            run_experiment_beam_search(args.input, args.output, args.prompt, args.url, args.beam)
+        else:
+            run_experiment_batch_beam_search(args.input, args.output, args.prompt, args.url, args.batch, args.beam)
 
 
 # list of what to test
