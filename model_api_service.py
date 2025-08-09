@@ -171,7 +171,7 @@ class VLLMService:
         batch_messages = [[{"role": "user", "content": f"{prompt} {question}"}] for question in questions]
         batch_prompt_token_ids = self.model.get_chat_prompt_token_ids(messages=batch_messages)
 
-        batch_prompts = [vllm.inputs.TokensPrompt(prompt_token_ids=prompt_token_ids)
+        batch_prompts = [vllm.inputs.TokensPrompt(prompt_token_ids=prompt_token_ids + [151668])
                          for prompt_token_ids in batch_prompt_token_ids]
 
         output = self.model.beam_search(prompts=batch_prompts,
@@ -183,7 +183,15 @@ class VLLMService:
                                             length_penalty=length_penalty,
                                         )
                                     )
-        return [request.sequences[0].text for request in output]
+        answers = []
+        for ind, request in enumerate(output):
+            prompt_length = len(batch_prompt_token_ids[ind]) + 1
+            tokens = request.sequences[0].tokens[prompt_length:]
+            if tokens[-1] == 151645:
+                tokens = tokens[:-1]
+            answers.append(self.model.get_tokenizer().decode(tokens).strip())
+
+        return answers
 
     def chat_get_output(self, question: str, prompt: str, max_tokens: int = 100, n: int = 1,
                         top_p: float = 1.0, min_tokens: int = 50, temperature: float = 0.0,
