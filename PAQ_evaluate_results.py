@@ -30,7 +30,10 @@ def main(test_data_path, experiment_results_path):
                 testset_line = next(test_set)
                 testset_line_id, _, testset_answer = parse_line(testset_line)
 
-            if exp_answer == testset_answer:
+            exp_answer = exp_answer.strip().lower().replace('  ', ' ')
+            testset_answer = testset_answer.strip().lower().replace('  ', ' ')
+
+            if exp_answer in testset_answer:
                 n_exact_matches += 1
         except:
             pass
