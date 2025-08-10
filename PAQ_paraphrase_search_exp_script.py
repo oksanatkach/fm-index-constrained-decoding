@@ -124,7 +124,7 @@ def run_stage_3(FILE_I, FILE_O, URL):
                 # find the most successful paraphrase
                 # better_question_tokens = get_best_paraphrase(prompt_token_ids)
                 # better_question = tokenizer.decode(better_question_tokens)
-                better_question = tokenizer.decode(best_paraphrase)
+                better_question = tokenizer.decode(best_paraphrase[:-1])
 
                 # this should be run with FM index enabled
                 # repeat the best paraphrase and answer the question

@@ -33,7 +33,7 @@ def main(test_data_path, experiment_results_path):
             exp_answer = exp_answer.strip().lower().replace('  ', ' ')
             testset_answer = testset_answer.strip().lower().replace('  ', ' ')
 
-            if exp_answer in testset_answer:
+            if (exp_answer in testset_answer) or (testset_answer in exp_answer):
                 n_exact_matches += 1
         except:
             pass
