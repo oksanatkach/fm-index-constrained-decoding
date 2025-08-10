@@ -44,6 +44,7 @@ def process(line, model_name):
         if is_bart:
             line = " " + line
         with _tokenizer.as_target_tokenizer():
+            line = "Paraphrase: " + line
             return _tokenizer(line, add_special_tokens=False)["input_ids"] + [_tokenizer.eos_token_id]
 
     return _tokenizer.encode(" " + line.strip()).tolist()[1:]
