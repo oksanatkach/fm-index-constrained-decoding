@@ -95,8 +95,8 @@ def run_stage_3(FILE_I, FILE_O, URL):
     with open("PAQ_prompt_paraphrase_search.txt", 'r') as fh:
         paraphrase_prompt = fh.read().strip()
 
-    with open("PAQ_prompt_repeat.txt", 'r') as fh:
-        repeat_prompt = fh.read().strip()
+    # with open("PAQ_prompt_repeat.txt", 'r') as fh:
+    #     repeat_prompt = fh.read().strip()
 
     with open(FILE_I, 'r', newline='', encoding='utf-8') as in_file:
         with open(FILE_O, 'w', newline='', encoding='utf-8') as out_file:
@@ -128,8 +128,10 @@ def run_stage_3(FILE_I, FILE_O, URL):
 
                 # this should be run with FM index enabled
                 # repeat the best paraphrase and answer the question
-                system_answer = get_chat_answer(better_question, repeat_prompt, URL)
-                out_file.write(line_id + '\t' + system_answer + '\n')
+                # system_answer = get_chat_answer(better_question, repeat_prompt, URL)
+                # out_file.write(line_id + '\t' + system_answer + '\n')
+
+                out_file.write(line_id + '\t' + better_question + '\n')
 
 def run_stage_1_batch(FILE_I, URL, batch_size):
     with open("PAQ_prompt_paraphrase_search.txt", 'r') as fh:
