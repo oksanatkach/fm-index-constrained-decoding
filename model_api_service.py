@@ -171,6 +171,7 @@ class VLLMService:
         batch_messages = [[{"role": "user", "content": f"{prompt} {question}"}] for question in questions]
         batch_prompt_token_ids = self.model.get_chat_prompt_token_ids(messages=batch_messages)
 
+        # </think> token is 151668
         batch_prompts = [vllm.inputs.TokensPrompt(prompt_token_ids=prompt_token_ids + [151668])
                          for prompt_token_ids in batch_prompt_token_ids]
 

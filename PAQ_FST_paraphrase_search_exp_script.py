@@ -144,28 +144,9 @@ def run_stage_1_batch(FILE_I, URL, batch_size):
         response_jsn = json.loads(response.text)
         system_answers = response_jsn['answers']
         for ind, system_answer in enumerate(system_answers):
-
             tokens_hash = get_tokens_hash(questions[ind], prompt, URL)
             with open(f"{log_path}{tokens_hash}.vars", 'w') as out_file:
                 out_file.write(system_answer)
-
-def run_stage_2_batch(FILE_I, URL, batch_size):
-    with open("PAQ_prompt_full_paraphrase_search.txt", 'r') as fh:
-        paraphrase_prompt = fh.read().strip()
-
-    with open(FILE_I, newline='', encoding='utf-8') as in_file:
-        for line in in_file:
-            line_id, question, answer = parse_line(line)
-            beginnings = get_beginnings(question, paraphrase_prompt, URL)
-
-            # this should be run with FM index enabled
-            for beginning in beginnings:
-                prompt = f'Paraphrase this sentence in lowercase starting with "{beginning}":'
-                response_jsn = get_chat_output(question, prompt, URL)
-                beginning_tokens_hash = hash(tuple(response_jsn['prompt_token_ids']))
-                with open(f"{log_path}{beginning_tokens_hash}.output_token_ids", 'w') as beginning_tokens_fh:
-                    json.dump(response_jsn['output_token_ids'], beginning_tokens_fh)
-
 
 def run_experiment(FILE_I, FILE_O, stage, URL):
     if stage == 1:
@@ -180,10 +161,10 @@ def run_experiment_batch(FILE_I, FILE_O, stage, URL, batch_size):
         run_stage_1_batch(FILE_I, URL, batch_size)
     elif stage == 2:
         # run_stage_2_batch(FILE_I, URL, batch_size)
-        run_stage_2(FILE_I, URL, batch_size)
+        run_stage_2(FILE_I, URL)
     elif stage == 3:
         # run_stage_3_batch(FILE_I, FILE_O, URL, batch_size)
-        run_stage_3(FILE_I, FILE_O, URL, batch_size)
+        run_stage_3(FILE_I, FILE_O, URL)
 
 
 if __name__ == '__main__':
@@ -201,4 +182,7 @@ if __name__ == '__main__':
     if args.batch == 1:
         run_experiment(args.input, args.output, int(args.stage), args.url)
     else:
-        run_experiment_batch(args.input, args.output, int(args.stage), args.url, args.batch)
+        if args.stage == 1:
+            run_experiment_batch(args.input, args.output, int(args.stage), args.url, args.batch)
+        else:
+            run_experiment(args.input, args.output, int(args.stage), args.url)
