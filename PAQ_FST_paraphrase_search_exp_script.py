@@ -180,7 +180,7 @@ if __name__ == '__main__':
     args.stage = int(args.stage)
 
     assert args.batch > 0
-    assert args.batch in [1,2,3]
+    assert args.stage in [1,2,3]
     if args.batch == 1:
         run_experiment(args.input, args.output, int(args.stage), args.url)
     else:
