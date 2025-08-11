@@ -44,7 +44,7 @@ def get_beginnings(question, prompt, URL):
     tokens_hash = get_tokens_hash(question, prompt, URL)
     with open(f"{log_path}{tokens_hash}.beginnings", 'r') as beginnings_fh:
         beginnings = beginnings_fh.read().strip().split('\n')
-    return beginnings
+    return beginnings[-5:]
 
 def get_logprobs(tokens_hash) -> List[float]:
     file_path = f"{log_path}{tokens_hash}.logprobs"

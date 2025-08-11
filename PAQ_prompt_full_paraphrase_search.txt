@@ -1,4 +1,6 @@
-Come up with 5 different paraphrases of the sentence below making sure they start with different words and are worded like a general a question. Make sure they are in lower case. Separate each variant with a newline. Example:
+Come up with 5 different paraphrases of the sentence below making sure they start with different words and are worded like a general a question. Make sure they are in lower case. Separate each variant with a newline.
+
+Follow this example:
 
 Sentence: What is the number of counties in Albania?
 
@@ -7,5 +9,7 @@ in albania, how many counties are there?
 what is the total count of counties in albania?
 what’s the total number of counties in albania?
 how many administrative counties are there in albania?
+
+OK now generate the paraphrases for this sentence in the same format:
 
 Sentence:
