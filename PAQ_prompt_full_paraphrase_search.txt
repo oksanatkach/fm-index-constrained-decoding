@@ -1,4 +1,4 @@
-Come up with 5 different paraphrases of the sentence below making sure they start with different words and are worded like a general a question. Separate each variant with a newline. Example:
+Come up with 5 different paraphrases of the sentence below making sure they start with different words and are worded like a general a question. Make sure they are in lower case. Separate each variant with a newline. Example:
 
 Sentence: What is the number of counties in Albania?
 
