@@ -4,6 +4,7 @@ Follow this example:
 
 Sentence: What is the number of counties in Albania?
 
+Paraphrases:
 how many counties does albania have?
 in albania, how many counties are there?
 what is the total count of counties in albania?
