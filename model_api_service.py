@@ -403,7 +403,7 @@ async def chat_get_output_batch(request: BatchQuestionRequest):
 
     try:
         outputs = service.chat_get_output_batch(
-            question=request.questions,
+            questions=request.questions,
             prompt=request.prompt,
             n=request.n,
             max_tokens=request.max_tokens,
