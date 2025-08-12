@@ -199,7 +199,8 @@ class VLLMService:
                         stop_tokens: list = None) -> Dict[str, any]:
         # Default stop tokens for Qwen models
         if stop_tokens is None:
-            stop_tokens = ["<|endoftext|>", "<|im_end|>", "\n\n", "</think>"]
+            # stop_tokens = ["<|endoftext|>", "<|im_end|>", "\n\n", "</think>"]
+            stop_tokens = [self.model.get_tokenizer().eos_token_id]
 
         output = self.model.chat(
             messages=[{"role": "user", "content": f"{prompt} {question}"}],
@@ -212,6 +213,7 @@ class VLLMService:
                 top_k=0,
                 min_p=0.0,
                 #                stop=stop_tokens
+                stop_token_ids=stop_tokens
             ),
             chat_template_kwargs={"enable_thinking": False}
         )
