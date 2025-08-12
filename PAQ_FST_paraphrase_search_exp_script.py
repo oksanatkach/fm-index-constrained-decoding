@@ -39,6 +39,14 @@ def get_chat_output(question, prompt, URL):
     response_jsn = json.loads(response.text)['output']
     return response_jsn
 
+def get_chat_output_batch(questions: List[str], prompt: str, URL: str):
+    data = {"questions": questions,
+            "prompt": prompt,
+            "temperature": 0.0, "min_tokens": 10, "n": 1, "top_n": 1.0}
+    response = requests.post(f"{URL}/chat_get_output_batch", json=data)
+    response_jsn = json.loads(response.text)['outputs']
+    return response_jsn
+
 def get_beginnings(question, prompt, URL):
     # recover input_token_ids to get hash
     tokens_hash = get_tokens_hash(question, prompt, URL)
@@ -84,12 +92,12 @@ def run_stage_2(FILE_I, URL):
             vars = get_beginnings(question, paraphrase_prompt, URL)
 
             # this should be run with FM index FST enabled
-            for var in vars:
-                prompt = f'Paraphrase this sentence in lowercase:'
-                response_jsn = get_chat_output(var, prompt, URL)
-                var_tokens_hash = hash(tuple(response_jsn['prompt_token_ids']))
+            prompt = f'Paraphrase this sentence in lowercase:'
+            response_jsn = get_chat_output_batch(vars, prompt, URL)
+            for var_response in response_jsn:
+                var_tokens_hash = hash(tuple(var_response['prompt_token_ids']))
                 with open(f"{log_path}{var_tokens_hash}.output_token_ids", 'w') as var_tokens_fh:
-                    json.dump(response_jsn['output_token_ids'], var_tokens_fh)
+                    json.dump(var_response['output_token_ids'], var_tokens_fh)
 
 def run_stage_3(FILE_I, FILE_O, URL):
     with open("PAQ_prompt_full_paraphrase_search.txt", 'r') as fh:

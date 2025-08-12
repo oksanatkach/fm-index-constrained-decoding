@@ -53,6 +53,9 @@ class BatchAnswerResponse(BaseModel):
 class OutputResponse(BaseModel):
     output: Dict
 
+class BatchOutputResponse(BaseModel):
+    outputs: List[Dict]
+
 class PromptTokenIdsResponse(BaseModel):
     prompt_token_ids: List[int]
 
@@ -220,6 +223,35 @@ class VLLMService:
         return {'prompt_token_ids': output[0].prompt_token_ids,
                 'output_token_ids': output[0].outputs[0].token_ids}
 
+    def chat_get_output_batch(self, questions: List[str], prompt: str, max_tokens: int = 100, n: int = 1,
+             top_p: float = 1.0, min_tokens: int = 50, temperature: float = 0.0,
+             stop_tokens: list = None) -> List[Dict]:
+        # Default stop tokens for Qwen models
+        if stop_tokens is None:
+            # stop_tokens = ["<|endoftext|>", "<|im_end|>", "\n\n", "</think>"]
+            stop_tokens = [self.model.get_tokenizer().eos_token_id]
+
+        batch_messages = [[{"role": "user", "content": f"{prompt} {question}"}] for question in questions]
+        output = self.model.chat(
+            messages=batch_messages,
+            sampling_params=vllm.SamplingParams(
+                max_tokens=max_tokens,
+                min_tokens=min_tokens,
+                temperature=temperature,
+                n=n,
+                top_p=top_p,
+                top_k=0,
+                min_p=0.0,
+                #                stop=stop_tokens
+                stop_token_ids=stop_tokens
+            ),
+            chat_template_kwargs={"enable_thinking": False}
+        )
+
+        return [{'prompt_token_ids': request.prompt_token_ids,
+                'output_token_ids': request.outputs[0].token_ids}
+                for request in output]
+
     def chat_get_prompt_token_ids(self, question: str, prompt: str) -> List[int]:
         prompt_token_ids_output = self.model.get_chat_prompt_token_ids(
             messages=[{"role": "user", "content": f"{prompt} {question}"}],
@@ -361,6 +393,25 @@ async def chat_get_output(request: QuestionRequest):
             stop_tokens=request.stop_tokens
         )
         return OutputResponse(output=output)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error generating output: {str(e)}")
+
+@app.post("/chat_get_output_batch", response_model=BatchOutputResponse)
+async def chat_get_output_batch(request: BatchQuestionRequest):
+    if service is None:
+        raise HTTPException(status_code=503, detail="Model not loaded yet")
+
+    try:
+        outputs = service.chat_get_output_batch(
+            question=request.questions,
+            prompt=request.prompt,
+            n=request.n,
+            max_tokens=request.max_tokens,
+            min_tokens=request.min_tokens,
+            temperature=request.temperature,
+            stop_tokens=request.stop_tokens
+        )
+        return BatchOutputResponse(outputs=outputs)
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error generating output: {str(e)}")
 
