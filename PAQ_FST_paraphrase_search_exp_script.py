@@ -42,7 +42,7 @@ def get_chat_output(question, prompt, URL):
 def get_beginnings(question, prompt, URL):
     # recover input_token_ids to get hash
     tokens_hash = get_tokens_hash(question, prompt, URL)
-    with open(f"{log_path}{tokens_hash}.beginnings", 'r') as beginnings_fh:
+    with open(f"{log_path}{tokens_hash}.vars", 'r') as beginnings_fh:
         beginnings = beginnings_fh.read().strip().split('\n')
     return beginnings[-5:]
 
