@@ -39,6 +39,14 @@ def get_chat_output(question, prompt, URL):
     response_jsn = json.loads(response.text)['output']
     return response_jsn
 
+def get_chat_output_batch(questions: List[str], prompt: str, URL: str):
+    data = {"questions": questions,
+            "prompt": prompt,
+            "temperature": 0.0, "min_tokens": 10, "n": 1, "top_n": 1.0}
+    response = requests.post(f"{URL}/chat_get_output_batch", json=data)
+    response_jsn = json.loads(response.text)['outputs']
+    return response_jsn
+
 def get_beginnings(question, prompt, URL):
     # recover input_token_ids to get hash
     tokens_hash = get_tokens_hash(question, prompt, URL)
@@ -83,20 +91,19 @@ def run_stage_2(FILE_I, URL):
             line_id, question, answer = parse_line(line)
             beginnings = get_beginnings(question, paraphrase_prompt, URL)
 
-            # this should be run with FM index enabled
-            for beginning in beginnings:
-                prompt = f'Paraphrase this sentence in lowercase starting with "{beginning}":'
-                response_jsn = get_chat_output(question, prompt, URL)
-                beginning_tokens_hash = hash(tuple(response_jsn['prompt_token_ids']))
-                with open(f"{log_path}{beginning_tokens_hash}.output_token_ids", 'w') as beginning_tokens_fh:
-                    json.dump(response_jsn['output_token_ids'], beginning_tokens_fh)
+            # this should be run with smoothed FM index enabled
+            prompt = f'Paraphrase this sentence in lowercase starting with'
+            questions = [f'"{beginning}": {question}' for beginning in beginnings]
+            response_jsn = get_chat_output_batch(questions, prompt, URL)
+
+            for var_response in response_jsn:
+                var_tokens_hash = hash(tuple(var_response['prompt_token_ids']))
+                with open(f"{log_path}{var_tokens_hash}.output_token_ids", 'w') as var_tokens_fh:
+                    json.dump(var_response['output_token_ids'], var_tokens_fh)
 
 def run_stage_3(FILE_I, FILE_O, URL):
     with open("PAQ_prompt_paraphrase_search.txt", 'r') as fh:
         paraphrase_prompt = fh.read().strip()
-
-    # with open("PAQ_prompt_repeat.txt", 'r') as fh:
-    #     repeat_prompt = fh.read().strip()
 
     with open(FILE_I, 'r', newline='', encoding='utf-8') as in_file:
         with open(FILE_O, 'w', newline='', encoding='utf-8') as out_file:
@@ -104,22 +111,23 @@ def run_stage_3(FILE_I, FILE_O, URL):
                 line_id, question, answer = parse_line(line)
                 beginnings = get_beginnings(question, paraphrase_prompt, URL)
 
-                beginning_tokens_lst = []
-                beginning_logprobs_lst = []
+                var_tokens_lst = []
+                var_logprobs_lst = []
                 for beginning in beginnings:
-                    prompt = f'Paraphrase this sentence in lowercase starting with "{beginning}":'
-                    beginning_tokens_hash = get_tokens_hash(question, prompt, URL)
+                    prompt = f'Paraphrase this sentence in lowercase starting with'
+                    question = f'"{beginning}": {question}'
+                    var_tokens_hash = get_tokens_hash(question, prompt, URL)
 
-                    with open(f"{log_path}{beginning_tokens_hash}.output_token_ids", 'r') as beginning_tokens_fh:
-                        beginning_tokens = json.load(beginning_tokens_fh)
-                        beginning_tokens_lst.append(beginning_tokens)
+                    with open(f"{log_path}{var_tokens_hash}.output_token_ids", 'r') as var_tokens_fh:
+                        var_tokens = json.load(var_tokens_fh)
+                        var_tokens_lst.append(var_tokens)
 
-                    beginning_logprobs = get_logprobs(beginning_tokens_hash)
-                    beginning_logprobs_lst.append(beginning_logprobs)
+                    var_logprobs = get_logprobs(var_tokens_hash)
+                    var_logprobs_lst.append(var_logprobs)
 
-                beginning_scores = [sum(beginning_logprobs) for beginning_logprobs in beginning_logprobs_lst]
-                argmax_paraphrase = max(range(len(beginning_scores)), key=lambda i: beginning_scores[i])
-                best_paraphrase = beginning_tokens_lst[argmax_paraphrase]
+                var_scores = [sum(beginning_logprobs) for beginning_logprobs in var_logprobs_lst]
+                argmax_paraphrase = max(range(len(var_scores)), key=lambda i: var_scores[i])
+                best_paraphrase = var_tokens_lst[argmax_paraphrase]
 
                 # find the most successful paraphrase
                 # better_question_tokens = get_best_paraphrase(prompt_token_ids)
@@ -155,24 +163,6 @@ def run_stage_1_batch(FILE_I, URL, batch_size):
             with open(f"{log_path}{tokens_hash}.beginnings", 'w') as out_file:
                 out_file.write(system_answer)
 
-def run_stage_2_batch(FILE_I, URL, batch_size):
-    with open("PAQ_prompt_paraphrase_search.txt", 'r') as fh:
-        paraphrase_prompt = fh.read().strip()
-
-    with open(FILE_I, newline='', encoding='utf-8') as in_file:
-        for line in in_file:
-            line_id, question, answer = parse_line(line)
-            beginnings = get_beginnings(question, paraphrase_prompt, URL)
-
-            # this should be run with FM index enabled
-            for beginning in beginnings:
-                prompt = f'Paraphrase this sentence in lowercase starting with "{beginning}":'
-                response_jsn = get_chat_output(question, prompt, URL)
-                beginning_tokens_hash = hash(tuple(response_jsn['prompt_token_ids']))
-                with open(f"{log_path}{beginning_tokens_hash}.output_token_ids", 'w') as beginning_tokens_fh:
-                    json.dump(response_jsn['output_token_ids'], beginning_tokens_fh)
-
-
 def run_experiment(FILE_I, FILE_O, stage, URL):
     if stage == 1:
         run_stage_1(FILE_I, URL)
@@ -185,11 +175,9 @@ def run_experiment_batch(FILE_I, FILE_O, stage, URL, batch_size):
     if stage == 1:
         run_stage_1_batch(FILE_I, URL, batch_size)
     elif stage == 2:
-        # run_stage_2_batch(FILE_I, URL, batch_size)
-        run_stage_2(FILE_I, URL, batch_size)
+        run_stage_2(FILE_I, URL)
     elif stage == 3:
-        # run_stage_3_batch(FILE_I, FILE_O, URL, batch_size)
-        run_stage_3(FILE_I, FILE_O, URL, batch_size)
+        run_stage_3(FILE_I, FILE_O, URL)
 
 
 if __name__ == '__main__':
