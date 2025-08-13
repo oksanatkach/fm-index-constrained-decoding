@@ -1,4 +1,4 @@
-Come up with 5 different beginnings (up to 4 words) that could start a paraphrase of the sentence below. Separate each beginning variant with a newline. Example:
+Come up with 5 different beginnings (up to 4 words) that could start a paraphrase of the sentence below. Do not answer the question. Separate each beginning variant with a newline. Make sure the beginnings are in lower case. Example:
 
 Sentence: What is the number of counties in Albania?
 
