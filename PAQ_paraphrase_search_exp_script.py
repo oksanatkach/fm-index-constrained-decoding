@@ -125,7 +125,7 @@ def run_stage_3(FILE_I, FILE_O, URL):
                     var_logprobs = get_logprobs(var_tokens_hash)
                     var_logprobs_lst.append(var_logprobs)
 
-                var_scores = [sum(beginning_logprobs) for beginning_logprobs in var_logprobs_lst]
+                var_scores = [sum(var_logprobs)/len(var_logprobs) for var_logprobs in var_logprobs_lst]
                 argmax_paraphrase = max(range(len(var_scores)), key=lambda i: var_scores[i])
                 best_paraphrase = var_tokens_lst[argmax_paraphrase]
 
