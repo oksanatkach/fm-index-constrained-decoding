@@ -1,3 +1,4 @@
+from collections import Counter
 import argparse
 import re
 
@@ -47,10 +48,20 @@ def main(test_data_path, experiment_results_path):
                 n_exact_matches += 1
 
             # calc F1
-            prediction_tokens = set(exp_answer.split())
-            golden_tokens = set(testset_answer.split())
-            precision = len(prediction_tokens.intersection(golden_tokens)) / len(prediction_tokens)
-            recall = len(prediction_tokens.intersection(golden_tokens)) / len(golden_tokens)
+            gt_tokens = re.findall(r'\b\w+\b', testset_answer)
+            pred_tokens = re.findall(r'\b\w+\b', exp_answer)
+            gt_counter = Counter(gt_tokens)
+            pred_counter = Counter(pred_tokens)
+            common_tokens = gt_counter & pred_counter
+            overlap = sum(common_tokens.values())
+            precision = overlap / sum(pred_counter.values()) if sum(pred_counter.values()) > 0 else 0
+            recall = overlap / sum(gt_counter.values()) if sum(gt_counter.values()) > 0 else 0
+
+            # prediction_tokens = set(exp_answer.split())
+            # golden_tokens = set(testset_answer.split())
+            # precision = len(prediction_tokens.intersection(golden_tokens)) / len(prediction_tokens)
+            # recall = len(prediction_tokens.intersection(golden_tokens)) / len(golden_tokens)
+
             if not (precision == recall == 0):
                 f1 = (2 * precision * recall) / (precision + recall)
                 f1_sum += f1
