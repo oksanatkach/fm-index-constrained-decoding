@@ -68,5 +68,3 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
     main(args.testset, args.experiment)
-
-    main("test_data/PAQ_testset.tsv", "test_data/results/exp1.tsv")
