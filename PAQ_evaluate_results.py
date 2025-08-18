@@ -2,7 +2,10 @@ import argparse
 import re
 
 def parse_exp_results_line(line):
-    line_id, text = tuple(line.strip().split('\t'))
+    split_line = line.strip().split('\t')
+    line_id = split_line[0]
+    text = ' '.join(split_line[1:])
+
     if "Answer:" not in text and "answer:" not in text:
         return line_id, "", ""
     parsed_text = tuple(re.split(r'(?i)answer:', text))
@@ -27,9 +30,8 @@ def main(test_data_path, experiment_results_path):
     total_count = 0
     f1_sum = 0
 
-    ind = 0
     for exp_line in exp_results:
-        ind += 1
+        print(exp_line)
 
         exp_line_id, _, exp_answer = parse_exp_results_line(exp_line)
         testset_line = next(test_set)
@@ -62,9 +64,11 @@ def main(test_data_path, experiment_results_path):
     print("macro F1:", f1_sum / total_count)
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description="Run PAQ experiment evaluation")
-    parser.add_argument('--testset', '-t', required=True, help='Path to test set TSV file')
-    parser.add_argument('--experiment', '-e', required=True, help='Path to experiment results TSV file')
+    main("data/PAQ/PAQ_paraphrase_set.tsv", "data/results_Aug_6/exp_free.tsv")
 
-    args = parser.parse_args()
-    main(args.testset, args.experiment)
+    # parser = argparse.ArgumentParser(description="Run PAQ experiment evaluation")
+    # parser.add_argument('--testset', '-t', required=True, help='Path to test set TSV file')
+    # parser.add_argument('--experiment', '-e', required=True, help='Path to experiment results TSV file')
+
+    # args = parser.parse_args()
+    # main(args.testset, args.experiment)
