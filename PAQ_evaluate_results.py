@@ -64,11 +64,9 @@ def main(test_data_path, experiment_results_path):
     print("macro F1:", f1_sum / total_count)
 
 if __name__ == '__main__':
-    main("data/PAQ/PAQ_paraphrase_set.tsv", "data/results_Aug_6/exp_free.tsv")
+    parser = argparse.ArgumentParser(description="Run PAQ experiment evaluation")
+    parser.add_argument('--testset', '-t', required=True, help='Path to test set TSV file')
+    parser.add_argument('--experiment', '-e', required=True, help='Path to experiment results TSV file')
 
-    # parser = argparse.ArgumentParser(description="Run PAQ experiment evaluation")
-    # parser.add_argument('--testset', '-t', required=True, help='Path to test set TSV file')
-    # parser.add_argument('--experiment', '-e', required=True, help='Path to experiment results TSV file')
-
-    # args = parser.parse_args()
-    # main(args.testset, args.experiment)
+    args = parser.parse_args()
+    main(args.testset, args.experiment)
