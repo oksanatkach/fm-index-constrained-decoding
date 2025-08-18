@@ -20,6 +20,8 @@ def main(test_data_path, experiment_results_path):
     test_set = line_generator(test_data_path)
     exp_results = line_generator(experiment_results_path)
     n_exact_matches = 0
+    total_count = 0
+    f1_sum = 0
     for exp_line in exp_results:
         try:
             exp_line_id, _, exp_answer = parse_exp_results_line(exp_line)
@@ -35,11 +37,22 @@ def main(test_data_path, experiment_results_path):
 
             if (exp_answer in testset_answer) or (testset_answer in exp_answer):
                 n_exact_matches += 1
+
+            # calc F1
+            prediction_tokens = set(exp_answer.split())
+            golden_tokens = set(testset_answer.split())
+            precision = len(prediction_tokens.intersection(golden_tokens)) / len(prediction_tokens)
+            recall = len(prediction_tokens.intersection(golden_tokens)) / len(golden_tokens)
+            f1 = (2 * precision * recall) / (precision + recall)
+            f1_sum += f1
+            total_count += 1
+
         except:
             pass
 
     print("Experiment:", experiment_results_path)
-    print("Exact match accuracy:", n_exact_matches)
+    print("Exact match accuracy:", n_exact_matches / total_count)
+    print("macro F1:", f1_sum / total_count)
 
 if __name__ == '__main__':
     # test_data_path = "/"
