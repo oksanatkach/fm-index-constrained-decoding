@@ -31,8 +31,6 @@ def main(test_data_path, experiment_results_path):
     f1_sum = 0
 
     for exp_line in exp_results:
-        print(exp_line)
-
         exp_line_id, _, exp_answer = parse_exp_results_line(exp_line)
         testset_line = next(test_set)
         testset_line_id, _, testset_answer = parse_line(testset_line)
